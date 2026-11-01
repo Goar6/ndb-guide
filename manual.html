@@ -83,7 +83,7 @@
 <div class="wrap">
 
 <aside class="viewer">
-  <div class="vstage" id="vstage"><img class="pg" id="vimg" alt="原书页面"></div>
+  <div class="vstage" id="vstage"><img class="pg" id="vimg" alt="原书页面" decoding="async"></div>
   <div class="vbar">
     <button id="bprev" title="上一张（本节内循环）">◀</button>
     <button id="bnext" title="下一张（本节内循环）">▶</button>
@@ -529,9 +529,10 @@ const LABELS = {
 const stage=document.getElementById('vstage'), img=document.getElementById('vimg'),
       cap=document.getElementById('vcap'), thumbs=document.getElementById('vthumbs');
 const secs=[...document.querySelectorAll('[data-imgs]')];
-const V='?v=20261101c';
+const V='?v=20261101d';
 let curSec=null, idx=0, scale=1, tx=0, ty=0, fresh=true;
 const files=()=>curSec?curSec.dataset.imgs.split(',').filter(Boolean):[];
+const imageURL=(f,format='webp',retry=0)=>'manual/'+f.replace(/\.png$/i,'.'+format)+V+(retry?'&t='+retry:'');
 function apply(){ img.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')'; }
 function fit(){
   const w=stage.clientWidth, h=stage.clientHeight;
@@ -541,7 +542,8 @@ function fit(){
 function show(i){
   const f=files(); if(!f.length) return;
   idx=(i+f.length)%f.length;
-  img.src='manual/'+f[idx]+V;
+  img.dataset.rc='0'; img.dataset.fallback='0';
+  img.src=imageURL(f[idx]);
   cap.textContent=LABELS[f[idx]]||f[idx];
   [...thumbs.children].forEach((t,j)=>t.classList.toggle('cur',j===idx));
 }
@@ -549,8 +551,14 @@ function buildThumbs(){
   thumbs.innerHTML='';
   files().forEach((f,j)=>{
     const t=document.createElement('img');
-    t.src='manual/'+f+V; t.title=LABELS[f]||f;
-    t.onerror=()=>{ const n=(+t.dataset.rc||0); if(n<5){ t.dataset.rc=n+1; setTimeout(()=>{ t.src='manual/'+f+'?t='+Date.now(); },400*(n+1)); } };
+    t.loading='lazy'; t.decoding='async';
+    t.dataset.rc='0'; t.dataset.fallback='0';
+    t.src=imageURL(f); t.title=LABELS[f]||f;
+    t.onerror=()=>{
+      if(t.dataset.fallback!=='1'){ t.dataset.fallback='1'; t.dataset.rc='0'; t.src=imageURL(f,'png'); return; }
+      const n=(+t.dataset.rc||0);
+      if(n<5){ t.dataset.rc=n+1; setTimeout(()=>{ t.src=imageURL(f,'png',Date.now()); },400*(n+1)); }
+    };
     t.onclick=()=>{ show(j); fresh=false; };
     thumbs.appendChild(t);
   });
@@ -559,8 +567,21 @@ function setSection(el){
   if(el===curSec) return;
   curSec=el; idx=0; fresh=true; buildThumbs(); show(0);
 }
-img.addEventListener('load',()=>{ if(fresh) fit(); });
-img.addEventListener('error',()=>{ const n=(+img.dataset.rc||0); if(n<5){ img.dataset.rc=n+1; setTimeout(()=>{ const f=files()[idx]; if(f) img.src='manual/'+f+'?t='+Date.now(); },400*(n+1)); return; } cap.textContent='⚠ 图片加载失败：'+(files()[idx]||'').split('?')[0]+'（已自动重试，请检查网络连接或图片文件是否完整）'; });
+img.addEventListener('load',()=>{
+  if(fresh) fit();
+  const f=files(); if(f.length<2) return;
+  const section=curSec, next=f[(idx+1)%f.length];
+  const preload=()=>{ if(curSec!==section) return; const p=new Image(); p.src=imageURL(next); };
+  if('requestIdleCallback' in window) requestIdleCallback(preload,{timeout:1500});
+  else setTimeout(preload,300);
+});
+img.addEventListener('error',()=>{
+  const f=files()[idx]; if(!f) return;
+  if(img.dataset.fallback!=='1'){ img.dataset.fallback='1'; img.dataset.rc='0'; img.src=imageURL(f,'png'); return; }
+  const n=(+img.dataset.rc||0);
+  if(n<5){ img.dataset.rc=n+1; setTimeout(()=>{ img.src=imageURL(f,'png',Date.now()); },400*(n+1)); return; }
+  cap.textContent='⚠ 图片加载失败：'+f+'（已自动重试，请检查网络连接或图片文件是否完整）';
+});
 stage.addEventListener('wheel',e=>{
   e.preventDefault();
   const r=stage.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;

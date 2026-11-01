@@ -15,7 +15,9 @@
 以下文件来自《Nuclear Design Bureau》的游戏画面，或包含此类游戏画面：
 
 - `assets/ndb_ui_screenshot2.png`
+- `assets/ndb_ui_screenshot2.webp`
 - `manual/mp22.png` 至 `manual/mp56.png`
+- `manual/mp22.webp` 至 `manual/mp56.webp`
 - `docs/images/main-interface-preview.png`
 - `docs/images/field-manual-preview.png`
 

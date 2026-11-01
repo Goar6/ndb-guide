@@ -137,7 +137,10 @@
     </div>
     <div class="viewer" id="viewer">
       <div class="canvas" id="canvas">
-        <img src="assets/ndb_ui_screenshot2.png" alt="游戏主界面">
+        <picture>
+          <source srcset="assets/ndb_ui_screenshot2.webp" type="image/webp">
+          <img src="assets/ndb_ui_screenshot2.png" alt="游戏主界面" decoding="async" fetchpriority="high">
+        </picture>
         <span class="badge" style="left:81%;top:6.5%">1</span>
         <span class="badge" style="left:30%;top:12%">2</span>
         <span class="badge" style="left:44%;top:52%">3</span>
