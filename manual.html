@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>野战手册 · Nuclear Design Bureau 对照阅读（原文 + 翻译 + 导读）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #14100c; color: #d8d2c4; font-family: "Microsoft YaHei", "PingFang SC", sans-serif; line-height: 1.75; }
+  /* 顶栏 */
+  header.bar { display:flex; align-items:center; gap:14px; padding:10px 18px; background:#1b1510; border-bottom:1px solid #4a3a28; position:sticky; top:0; z-index:20; }
+  header.bar .t { color:#e2543e; font-size:16px; letter-spacing:1px; white-space:nowrap; }
+  header.bar .hint { color:#8f8674; font-size:12px; }
+  header.bar a.back { margin-left:auto; padding:4px 12px; background:#241f18; border:1px solid #4a3a28; border-radius:4px; color:#e8c06a; text-decoration:none; font-size:12.5px; white-space:nowrap; }
+  header.bar a.back:hover { background:#35291c; }
+  /* 主体双栏 */
+  .wrap { display:flex; align-items:stretch; }
+  /* 左侧原文查看器 */
+  aside.viewer { width:46%; flex-shrink:0; align-self:flex-start; position:sticky; top:41px; height:calc(100vh - 41px); display:flex; flex-direction:column; background:#0d0b08; border-right:1px solid #4a3a28; }
+  .vstage { flex:1; overflow:hidden; position:relative; }
+  .vstage img.pg { position:absolute; left:0; top:0; transform-origin:0 0; cursor:grab; max-width:none; user-select:none; -webkit-user-drag:none; }
+  .vstage img.pg.grabbing { cursor:grabbing; }
+  .vbar { display:flex; align-items:center; gap:6px; padding:6px 10px; background:#1b1510; border-top:1px solid #3a332a; flex-wrap:wrap; }
+  .vbar button { background:#2a241c; border:1px solid #55483a; color:#e8c06a; border-radius:4px; padding:2px 10px; font-size:13px; cursor:pointer; }
+  .vbar button:hover { background:#3a3226; }
+  .vbar .cap { color:#b8af9c; font-size:12.5px; margin-left:auto; max-width:60%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .thumbs { display:flex; gap:6px; padding:6px 10px; background:#171310; border-top:1px solid #3a332a; min-height:66px; align-items:center; }
+  .thumbs img { width:84px; height:auto; border:2px solid transparent; border-radius:3px; cursor:pointer; opacity:.65; }
+  .thumbs img.cur { border-color:#e2543e; opacity:1; }
+  /* 右侧译文 */
+  main.text { flex:1; padding:22px 34px 90px; min-width:0; }
+  header.page { border-bottom:2px solid #6a4a2a; padding-bottom:14px; margin-bottom:16px; }
+  header.page .doc { color:#8f8674; font-size:12.5px; letter-spacing:2px; }
+  header.page h2 { color:#f0e8d8; font-size:22px; margin-top:4px; }
+  header.page .stamp { display:inline-block; margin-top:8px; padding:2px 12px; border:2px solid #b03a2a; color:#b03a2a; font-weight:bold; transform:rotate(-2deg); font-size:13px; letter-spacing:2px; }
+  .toc-lines { margin:2px 0 18px; }
+  .tl { font-size:13px; margin:6px 0; line-height:2; }
+  .tl a { color:#c4bba8; text-decoration:none; border-bottom:1px dotted #6a6252; padding-bottom:1px; }
+  .tl a:hover { color:#f0e8d8; }
+  .tl a.tlc { color:#e8c06a; font-weight:bold; border-bottom:none; margin-right:6px; }
+  .lead { color:#b8af9c; font-size:14px; margin-bottom:18px; }
+  .chap { color:#f0e8d8; font-size:19px; margin:30px 0 6px; padding:8px 0 8px 14px; border-left:5px solid #b03a2a; background:#1b1712; }
+  .chap .pg { color:#6a6252; font-size:12px; font-weight:normal; margin-left:8px; }
+  h3.sec { color:#e8c06a; font-size:15.5px; margin:20px 0 6px; padding-left:10px; border-left:4px solid #e8c06a; }
+  h3.sec .pg { color:#6a6252; font-size:11.5px; font-weight:normal; margin-left:8px; }
+  h3.sec .en { color:#8f8674; font-size:11px; font-weight:normal; margin-left:8px; letter-spacing:.5px; }
+  p, li { font-size:13.5px; color:#c4bba8; }
+  .text p>b:first-child, .text li>b:first-child { color:#e8c06a; }
+  ul.pts { margin:6px 0 10px 6px; list-style:none; }
+  ul.pts li { margin-bottom:4px; padding-left:10px; }
+  ul.pts li .no { color:#6a6252; margin-right:6px; }
+  .box { background:#262013; border:1px solid #6a5a3a; border-radius:6px; padding:10px 14px; margin:10px 0; font-size:13px; color:#d8d2c4; }
+  .box .bt { font-weight:bold; color:#e8c06a; letter-spacing:1px; }
+  .bg { background:#151f1c; border-left:3px solid #2f7a6a; padding:8px 14px; margin:10px 0; font-size:13px; color:#a8c8c0; }
+  .bg .bt { color:#6fd3a8; font-weight:bold; }
+  .tip { background:#151f1c; border-left:3px solid #2f7a6a; padding:8px 14px; margin:10px 0; font-size:13px; color:#a8c8c0; }
+  .tip .bt { color:#6fd3a8; font-weight:bold; }
+  .dir { display:inline-block; border:1.5px solid #b03a2a; color:#e0705a; padding:2px 10px; font-size:12px; margin:6px 0; }
+  table { border-collapse:collapse; width:100%; margin:10px 0; font-size:12.5px; }
+  th, td { border:1px solid #4a423a; padding:5px 10px; text-align:left; color:#c4bba8; }
+  th { background:#26211a; color:#e8c06a; }
+  .formula { font-family:Consolas, monospace; background:#17140f; padding:2px 8px; border-radius:4px; color:#9fd3b8; font-size:12.5px; }
+  kbd { background:#2a241c; border:1px solid #55483a; border-bottom-width:2px; border-radius:4px; padding:1px 7px; font-size:12px; font-family:Consolas, monospace; color:#f0e8d8; }
+  #topbtn { position:fixed; right:18px; bottom:18px; z-index:30; background:#2a241c; border:1px solid #55483a; color:#e8c06a; border-radius:4px; padding:5px 12px; font-size:13px; cursor:pointer; display:none; }
+  #topbtn:hover { background:#3a3226; }
+  @media (max-width: 980px) {
+    .wrap { flex-direction:column; }
+    aside.viewer { width:100%; flex-shrink:0; align-self:stretch; position:sticky; top:41px; height:44vh; border-right:none; border-bottom:1px solid #4a3a28; z-index:10; }
+    main.text { padding:16px 16px 70px; }
+    header.bar .hint { display:none; }
+    .thumbs img { width:64px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <span class="t">野战手册 · 对照阅读</span>
+  <span class="hint">右侧滚动译文，左侧自动切换到对应原书跨页 · 滚轮缩放 · 拖拽平移 · <b style="color:#e0705a">SEE DIRECTIVE 红章 = 游戏内对应指令</b></span>
+  <a class="back" href="index.html">← 返回主界面标注页</a>
+</header>
+
+<div class="wrap">
+
+<aside class="viewer">
+  <div class="vstage" id="vstage"><img class="pg" id="vimg" alt="原书页面"></div>
+  <div class="vbar">
+    <button id="bprev" title="上一张（本节内循环）">◀</button>
+    <button id="bnext" title="下一张（本节内循环）">▶</button>
+    <button id="bzout">－</button>
+    <button id="bzin">＋</button>
+    <button id="bfit">适应</button>
+    <button id="breset">1:1</button>
+    <span class="cap" id="vcap"></span>
+  </div>
+  <div class="thumbs" id="vthumbs"></div>
+</aside>
+
+<main class="text">
+
+<header class="page" id="toc" data-imgs="mp22.png">
+  <div class="doc">НАРОДНЫЙ КОМИССАРИАТ · 特种工程局 — 文件 74-R · 第 4 次修订 · 1954</div>
+  <h2>FIELD MANUAL 野战手册（扩展技术参考）</h2>
+  <span class="stamp">仅供官方使用 · FOR OFFICIAL USE ONLY</span>
+  <p class="lead" style="margin-top:12px">本文档是游戏内置教科书 <b>《野战手册》（Document 74-R, Revision 4, 1954）</b> 的完整中文翻译与导读，按原书章节组织。左侧为原书页面实拍（可缩放拖拽），右侧每节包含【译文】【背景】【入门提示】三层：译文力求忠实原文；背景补充相关历史与物理知识；入门提示告诉你这一段在游戏里意味着什么。书页边缘的「SEE DIRECTIVE X-X」红章表示该知识点对应游戏中的哪条指令。</p>
+  <div class="box" id="disclaimer"><span class="bt">免责声明、和平呼吁与翻译说明：</span>本指南由玩家社区制作，与开发商 Design Bureau KB-11 无关，仅用于理解游戏机制。愿世界和平。请珍视和平，反对战争与核武器的现实使用；请勿将游戏内容用于现实世界的武器设计、制造、使用或扩散。<br><br>本指南的游戏内容翻译由 <b>AI 工具全程完成</b>，专业术语已尽量调整一致性，但仍可能存在错译、漏译或其他错误，请以游戏原文为准。如遇游戏内容表述与历史现实冲突，应以玩家所在当地官方文件的表述为准。</div>
+    <div class="toc-lines">
+    <div class="tl"><a class="tlc" href="#ch1">第一章 · 常规炸药</a><a href="#ch1-1">P3 爆轰基础</a> / <a href="#ch1-2">P6 爆炸成形</a> / <a href="#ch1-3">P8 发射药物理</a></div>
+    <div class="tl"><a class="tlc" href="#ch2">第二章 · 核裂变</a><a href="#ch2-1">P11 原子</a> / <a href="#ch2-2">P14 链式反应</a> / <a href="#ch2-3">P17 临界质量</a> / <a href="#ch2-4">P20 枪式装配</a> / <a href="#ch2-5">P23 中子经济</a></div>
+    <div class="tl"><a class="tlc" href="#ch3">第三章 · 内爆</a><a href="#ch3-1">P27 钚问题</a> / <a href="#ch3-2">P29 内爆物理</a> / <a href="#ch3-3">P32 炸药透镜</a> / <a href="#ch3-4">P34 内爆装置</a></div>
+    <div class="tl"><a class="tlc" href="#ch4">第四章 · 热核武器</a><a href="#ch4-1">P37 聚变基础</a> / <a href="#ch4-2">P40 助爆</a> / <a href="#ch4-3">P42 分级武器</a> / <a href="#ch4-4">P45 次级</a> / <a href="#ch4-5">P49 火花塞设计</a> / <a href="#ch4-6">P52 当量标度</a></div>
+    <div class="tl"><a class="tlc" href="#appa">附录A · 材料参考</a><a class="tlc" href="#appb">附录B · 术语表</a><a class="tlc" href="#appc">附录C · 历史计划</a><a class="tlc" href="#appd">附录D · 操作与快捷键</a></div>
+  </div>
+  
+  <div class="box"><span class="bt">如何使用这本手册（导读）：</span>手册按真实核武器工程的知识链条编排：<b>先学会用炸药（第一章）→ 理解链式反应与临界（第二章）→ 用炸药把裂变材料压到超临界（第三章）→ 再用裂变点火聚变（第四章）</b>。这也正是战役指令 1-1 到 4-1 的任务链条。建议用法：每接到一条新指令，先读手册对应章节，写一句话设计论点，再上蓝图。全文术语统一见附录 B。</div>
+</header>
+
+<!-- ============ 第一章 ============ -->
+<h2 class="chap" id="ch1" data-imgs="mp23.png">第一章 · 常规炸药 CONVENTIONAL EXPLOSIVES <span class="pg">原书 P3 起</span></h2>
+
+<h3 class="sec" id="ch1-1" data-imgs="mp23.png,mp24.png">爆轰基础 <span class="en">DETONATION FUNDAMENTALS</span> <span class="pg">原书 P3–5</span></h3>
+<p><b>译文：</b>爆轰不是燃烧。它是穿过炸药的<b>超音速冲击波</b>：波前在材料中以声速传播，波前扫过的瞬间炸药被压缩并反应。</p>
+<div class="box"><span class="bt">爆燃 VS 爆轰：</span>爆燃（燃烧）：反应前锋移动<b>慢于</b>声速，黑火药约 400 m/s。爆轰：反应前锋移动<b>快于</b>声速，PBX-9501 爆速 8,800 m/s。</div>
+<p><b>爆速</b>是每种炸药的固定属性：PBX-9501（快 HE）8,800 m/s｜B 炸药 7,900 m/s｜巴拉托（慢 HE）5,100 m/s｜TNT 6,900 m/s。越快的炸药冲击越锐利、威力越大；慢炸药另有其用（见透镜一节）。</p>
+<p><b>查普曼–儒盖压力（CJ 压力）：</b>爆轰前锋正后方的压力，军用炸药可达 20–40 GPa（20–40 万大气压）。它压缩材料、加速破片、把冲击波推入周围介质。</p>
+<p><b>起爆：</b>高能炸药需要一个初始冲击才开始爆轰。在本模拟中，这个冲击由<b>雷管桥丝（Detonator Bridewire）单元</b>提供，它引爆 PBX-9501 和巴拉托。底火（Primer）用于枪式系统的黑火药点火，<b>不是</b>高能炸药透镜组的标准起爆器。</p>
+<div class="bg"><span class="bt">背景：</span>爆燃/爆轰之分是炸药化学的核心概念。黑火药几百年里都是“燃烧得快”，19 世纪才发现某些混合物可以以超音速自持传播——“detonation（爆轰）”一词由此诞生。CJ 压力以查普曼和儒盖两位弹道学家命名，是爆轰波理论（CJ 理论）的基石。</div>
+<div class="tip"><span class="bt">入门提示：</span>游戏材料面板里 EXPLOSIVES 分类的 PBX / Baratol 就是手册里的快/慢 HE 对。记住这组爆速数字（8800 和 5100），第三章炸药透镜要用。</div>
+
+<h3 class="sec" id="ch1-2" data-imgs="mp24.png,mp25.png">爆炸成形：引导爆轰波 <span class="en">EXPLOSIVE SHAPING</span> <span class="pg">原书 P6–7</span></h3>
+<p><b>译文：</b>在自由空间起爆的炸药，产生从起爆点向外扩张的<b>球形冲击波</b>。桥丝雷管起火后，冲击前锋从该点向四面八方传播——在网格上表现为一个不断扩大的圆形前锋（球面波的 2D 剖面）。<b>多点起爆</b>改变这些球面波在时间与空间上的重叠方式。<b>透镜设计就是对这种重叠的控制。</b></p>
+<div class="bg"><span class="bt">背景：</span>图 1.2 的“球面波扩展”就是为什么内爆装置需要透镜：单个雷管只能发出发散的波，而压缩弹芯需要会聚的波。从“发散”到“会聚”，靠的就是下一章的透镜。</div>
+<div class="dir">▶ 对应指令 2-1 THE EXPLOSIVE LENS（炸药透镜）</div>
+
+<h3 class="sec" id="ch1-3" data-imgs="mp25.png,mp26.png">发射药物理：加速抛射体 <span class="en">PROPELLANT PHYSICS</span> <span class="pg">原书 P8–10</span></h3>
+<p><b>译文：</b>与爆轰炸药不同，黑火药等<b>发射药是爆燃</b>：燃烧快但低于声速，结果是持续的推挤而非粉碎性打击。</p>
+<p><b>受限气体膨胀：</b>发射药在受限空间（枪管）内燃烧产生热气体，气体膨胀推动弹丸。枪管越长，气体推动时间越久。枪口速度取决于：枪管长度、发射药量、弹丸质量。</p>
+<p><b>关键变量：</b>发射药量（越多，气体越多、推力越强）；枪管长度（越长，加速越久）；弹丸质量（同样推力下越重加速越慢）；气密性（漏过弹丸的气体不做功）。</p>
+<p><b>达到高速度（>1000 m/s）：</b>大量发射药；弹丸与枪管壁间留小间隙；长枪管；轻弹丸。</p>
+<div class="box"><span class="bt">炮膛间隙（Bore Clearance）：</span>不要把弹丸画得顶住枪管壁。弹丸与枪管之间留 <b>1–2 格气隙</b>几乎不损失气体；而紧贴管壁的弹丸会因全程摩擦而减速。实践中，<b>留间隙的弹丸更快</b>。</div>
+<div class="bg"><span class="bt">背景：</span>这就是社区攻略里“枪管周围要留气隙”技巧的游戏手册出处。现实中枪炮弹丸与炮膛之间确有间隙（游隙），既容差又减摩。</div>
+<div class="dir">▶ 对应指令 1-2 THE ASSEMBLY（装配）</div>
+
+<!-- ============ 第二章 ============ -->
+<h2 class="chap" id="ch2" data-imgs="mp27.png">第二章 · 核裂变 NUCLEAR FISSION <span class="pg">原书 P11 起</span></h2>
+
+<h3 class="sec" id="ch2-1" data-imgs="mp27.png,mp28.png">原子：物质结构 <span class="en">THE ATOM</span> <span class="pg">原书 P11–13</span></h3>
+<p><b>译文：</b>所有物质由原子构成。每个原子中心是一个致密的<b>原子核</b>，包含质子（正电荷）和中子（不带电），核外轨道上是电子（负电荷）。</p>
+<p><b>同位素：</b>同种元素的原子质子数总是相同，但中子数可以不同，这些变体叫同位素——U-235：92 质子 143 中子｜U-238：92 质子 146 中子｜Pu-239：94 质子 145 中子。“三个多余的中子就是全部差别。”</p>
+<p><b>结合能：</b>原子核靠<b>强核力</b>结合在一起。把原子核拆开所需的能量叫结合能。重原子（铀、钚）每个核子的结合能<b>低于</b>中等质量原子（铁、镍）。重原子分裂时，产物结合得更紧，差额以能量形式释放。</p>
+<p><b>E = mc²：</b>质量与能量等价。铀核裂变时约 0.1% 的质量变成能量：<b>1 kg U-235 完全裂变 ≈ 17,000 吨 TNT</b>。</p>
+<div class="bg"><span class="bt">背景：</span>原文说“只有 U-235 能用慢中子维持链式反应”是入门简化——严格说 Pu-239 与 U-233 同样可以；手册的用意是强调 U-235 在慢中子（热中子）下裂变截面特别大、天然可裂变。结合能曲线（铁镍最高）是理解“裂变放能、聚变也放能”的总钥匙。</div>
+
+<h3 class="sec" id="ch2-2" data-imgs="mp28.png,mp29.png">链式反应：中子的指数增殖 <span class="en">THE CHAIN REACTION</span> <span class="pg">原书 P14–16</span></h3>
+<p><b>译文：</b>中子轰击 U-235 原子核 → 核变得不稳定 → 分裂为两个较小的原子核（裂变产物，如 ⁹²Kr + ¹⁴¹Ba）。每次裂变释放约 <b>200 MeV</b> 能量和 <b>2–3 个新中子</b>。</p>
+<p><b>代（Generation）：</b>每个中子又能引发新的裂变，如此形成“代”：第 1 代 1 次裂变 → 2.5 个中子；第 2 代 2.5 次 → 6.25 个；第 3 代 6.25 次 → 15.6 个……第 80 代约 10²⁴ 次裂变（1 kg 燃料耗尽）。<b>每代约 10 纳秒</b>——1 kg 燃料在不到 1 微秒内完全裂变。</p>
+<div class="box"><span class="bt">临界状态（CRITICALITY STATES）：</span>
+k &lt; 1 次临界：链式反应衰减，每代比上代小（中子数 Shrinks）｜
+k = 1 临界：自持稳定。反应堆运行在这里｜
+k &gt; 1 超临界：链式反应指数增长。<b>游戏装置需要这个。</b></div>
+<p>在游戏机制中，装置需要 k 明显大于 1。在设计工作台上，从遥测读 k 值——没有闪光可看。在实验室里则是另一回事：<b>如果你在支架上操作材料时看到蓝色闪光，说明装置已经超临界。退后。</b></p>
+<div class="bg"><span class="bt">背景：</span>“蓝色闪光”是真实临界事故的标志征象——空气中的契伦科夫辉光与电离蓝光。1945/1946 年洛斯阿拉莫斯“恶魔核心”两次事故中，当事人都报告看到“蓝色辉光”，手册把这条写进安全守则是非常认真的拟真。</div>
+<div class="tip"><span class="bt">入门提示：</span>k 有效值（k-effective）就是左侧遥测面板第一张图，也是整个游戏最重要的数字：它回答“你的装置会不会炸、炸多快”。</div>
+<div class="dir">▶ 对应指令 1-0 CRITICAL MASS（临界质量）</div>
+
+<h3 class="sec" id="ch2-3" data-imgs="mp30.png,mp31.png">临界质量：链式反应的门槛 <span class="en">CRITICAL MASS</span> <span class="pg">原书 P17–19</span></h3>
+<p><b>译文：</b>不是每个中子都引发裂变——许多完全逃逸了材料，或被无裂变地吸收。<b>临界质量是 k 达到 1 的最小构型。</b>它是一个 k 问题：k 还取决于几何形状、密度/压缩、反射层质量——临界质量不是固定的千克数，而是“能让 k 到 1 的那个量”。</p>
+<p><b>为什么质量重要：</b>中子直线飞行直到撞上东西。小球里大部分中子在撞到原子核之前就逃逸了；大球里中子有更多材料可穿、更可能引发裂变。关键比值是<b>体积（裂变发生处）/ 表面积（中子逃逸处）</b>，球越大比率越好。图 2.3 的实验：r=6 的球 k≈0.937（次临界），r=9 的球 k≈2.097（超临界）。</p>
+<div class="box"><span class="bt">裸球临界质量表：</span>U-235：<b>52 kg</b>｜Pu-239：<b>10 kg</b>｜U-233：15 kg</div>
+<p><b>装配难题：</b>临界质量本身已经在反应！一个临界的钚球无法加工和储存——它会熔化自己，或者更糟。因此材料必须保持为<b>次临界块体</b>，并非常快速地装配。</p>
+<div class="bg"><span class="bt">背景：</span>三个数字是公认的裸球临界质量参考值（真实值受纯度、密度影响）。钚的 10 kg 对 52 kg 的铀，正是后来两种不同武器构型分野的物理根源——记住它，第三章要用。</div>
+<div class="dir">▶ 对应指令 1-1 FIRST LIGHT（首次点火）</div>
+
+<h3 class="sec" id="ch2-4" data-imgs="mp31.png,mp32.png">枪式装配：最简单的武器设计 <span class="en">GUN-TYPE ASSEMBLY</span> <span class="pg">原书 P20–22</span></h3>
+<p><b>译文：</b>枪式武器原理简单：把一块次临界裂变材料高速射向另一块。完全合体后总质量超过临界，合体芯超临界（k &gt; 1）。</p>
+<p>但失控反应<b>不是在接触瞬间开始</b>的——它要等到一个中子出现在合体后的芯里。铀的自发裂变很慢（平均毫秒级），而合体芯保持合体的时间更短：弹丸回弹、部件弹开，枪还没等到第一个中子就自我解体了。听天由命，这一发就是哑弹。</p>
+<div class="box"><span class="bt">使用点火器（Use an Initiator）：</span>不要等运气。安装一台 <b>D-T 中子发生器</b>，计时在全合体瞬间点火。发生器提供第一个中子，合体芯自己完成剩下的。指令 1-3「试验场」专门演练这个。</div>
+<p><b>设计要素：</b>弹丸（次临界 U-235，通常圆柱形）；靶（另一块带中心空腔的次临界 U-235）；枪管（导引弹丸的钢管）；发射药（弹丸后方的黑火药或柯达药）；惰层（包在靶周围、反射中子的重材料）。</p>
+<p><b>为什么只有铀？</b>枪式只能用 U-235。钚的自发裂变太多——它不断放出中子，弹丸还在飞行，杂散中子就已启动链式反应，造成极小当量的<b>哑爆（fizzle）</b>。U-235 自发裂变率低得多，枪来得及完成装配。</p>
+<div class="box"><span class="bt">历史注：</span>「小男孩」（广岛，1945 年 8 月 6 日）采用枪式设计，64 kg U-235，当量约 15 kt。该设计未经实弹试验即投入实战。</div>
+<div class="dir">▶ 对应指令 1-2 THE ASSEMBLY（装配）</div>
+
+<h3 class="sec" id="ch2-5" data-imgs="mp33.png,mp34.png">中子经济：反射层、惰层与效率 <span class="en">NEUTRON ECONOMY</span> <span class="pg">原书 P23–25</span></h3>
+<p><b>译文：</b>裂变产生的多数中子逃逸了，没有引发下一次裂变。<b>反射层</b>和<b>惰层</b>改善中子经济。图 2.5：逃逸的中子被反射层散射回裂变材料。</p>
+<p><b>反射层（Reflectors）</b>——包在芯外、把中子散射回裂变材料的一层。好材料：</p>
+<ul class="pts">
+<li><span class="no">—</span><b>铍：</b>最佳反射层。吸收低、散射高，还发生 (n,2n) 反应——一个中子进、两个中子出；</li>
+<li><span class="no">—</span><b>天然铀（U-238）：</b>好反射层，高能中子还能引发快裂变；</li>
+<li><span class="no">—</span><b>碳化钨：</b>致密、反射好，附带惯性约束；</li>
+<li><span class="no">—</span><b>铅：</b>便宜、致密、反射中等。</li>
+</ul>
+<p><b>惰层（Tampers，惯性约束）：</b>用<b>惯性</b>把芯保持在一起的重材料。链式反应开始时，芯想炸开；大质量惰层把膨胀多顶住几微秒。这几微秒让更多代裂变发生，<b>当量急剧上升</b>。</p>
+<div class="box"><span class="bt">降低临界质量：</span>好反射层可减去 50–75%：U-235 裸球 52 kg → 钢反射 ~35 kg → <b>铍反射 ~15 kg</b>。</div>
+<div class="bg"><span class="bt">背景：</span>反射层与惰层在游戏中是两个可区分的角色：前者管“中子回家”，后者管“芯别散架”。历史上很多材料（如天然铀）一身二任。U-235 三种临界质量的对比表是 A/B 测试反射层收益的标尺。</div>
+<div class="dir">▶ 对应指令 1-4 THE TAMPER（惰层）</div>
+
+<!-- ============ 第三章 ============ -->
+<h2 class="chap" id="ch3" data-imgs="mp35.png">第三章 · 内爆 IMPLOSION <span class="pg">原书 P27 起</span></h2>
+
+<h3 class="sec" id="ch3-1" data-imgs="mp35.png">钚问题：枪式为什么失败 <span class="en">THE PLUTONIUM PROBLEM</span> <span class="pg">原书 P27–28</span></h3>
+<p><b>译文：</b>Pu-239 裸临界质量只有 10 kg（U-235 是 52 kg），但枪式装配有一个一票否决的缺陷：<b>自发裂变</b>。</p>
+<p><b>Pu-240 污染：</b>反应堆生产的钚总含一些 Pu-240，它的自发裂变率很高——每千克每秒约一百万中子。枪式装配要 ~1 毫秒，期间 Pu-240 放出的中子足以<b>提前</b>启动链式反应。</p>
+<p><b>提前起爆（Pre-detonation）：</b>链式反应在完全合体前开始，芯在大量燃料裂变之前就炸开——这就是哑爆：当量可能只有几吨 TNT，而不是千吨。</p>
+<div class="box"><span class="bt">装配时间对比：</span>枪式装配 ~1,000 微秒｜钚需要的装配时间 &lt; 1 微秒——<b>快 1000 倍</b>，任何枪都做不到。</div>
+<p><b>内爆：</b>不是把两块拼到一起，而是<b>同时从四面八方压碎整个芯</b>。装配时间降到 &lt;1 微秒。炸药必须近乎同步起爆——<b>这就是难点</b>。</p>
+<div class="bg"><span class="bt">背景：</span>这是真实历史：1944 年埃默里·西格雷发现汉福德反应堆钚含 Pu-240 后，奥本海默被迫全力推进原本只是备选的“内爆方案”。整个第三章描述的就是曼哈顿计划最艰难的一页。</div>
+<div class="dir">▶ 对应指令 2-0 THE PLUTONIUM PROBLEM（钚问题）</div>
+
+<h3 class="sec" id="ch3-2" data-imgs="mp36.png,mp37.png">内爆物理：压缩与密度 <span class="en">IMPLOSION PHYSICS</span> <span class="pg">原书 P29–31</span></h3>
+<p><b>译文：</b>临界质量取决于<b>密度</b>。压缩裂变材料，次临界质量就变成超临界。</p>
+<p><b>为什么压缩有用：</b>原子被推近时——中子在核之间穿行的距离更短；裂变概率上升；<b>临界质量随密度的平方下降</b>。</p>
+<div class="box"><span class="bt">密度法则（THE DENSITY RULE）：</span><span class="formula">M<sub>crit</sub> ∝ 1/ρ²</span> ——密度翻倍，临界质量减为 1/4。2 倍压缩下：10 kg 钚 → <b>2.5 kg 即临界</b>。</div>
+<p><b>实现压缩：</b>压缩金属球需要一个向内传播、同时击中表面所有点的冲击波。任何不对称都会产生射流和不稳定性，破坏均匀压缩。一套好的炸药系统能把弹芯压缩 <b>2–3 倍</b>。</p>
+<div class="tip"><span class="bt">入门提示：</span>“2–3 倍压缩”就是内爆式设计的验收线——试爆后用遥测里的密度图或粒子检查器核对压缩倍数，是诊断失败的第一手段。</div>
+<div class="dir">▶ 对应指令 2-2 COMPRESSION QUALIFICATION（压缩鉴定）</div>
+
+<h3 class="sec" id="ch3-3" data-imgs="mp37.png,mp38.png">炸药透镜：给冲击波塑形 <span class="en">EXPLOSIVE LENSES</span> <span class="pg">原书 P32–33</span></h3>
+<p><b>译文：</b>单个雷管产生向外扩张的波；弹芯需要的是会聚向内的波。<b>透镜把前者变成后者。</b></p>
+<p><b>透镜概念：</b>正如玻璃透镜通过减速来弯曲光，炸药透镜通过组合不同爆速的炸药来弯曲冲击波。</p>
+<div class="box"><span class="bt">工作方式：</span>
+1) 外层：快炸药（PBX-9501，8.8 km/s）｜
+2) 内层：慢炸药（巴拉托，5.1 km/s）｜
+3) 雷管在外表面起爆｜
+4) 波在外层材料中传得更快｜
+5) 波在材料界面处“弯曲”｜
+6) 结果：干净的圆形内向波阵面射向弹芯中心。</div>
+<div class="box"><span class="bt">同时性（SIMULTANEITY）：</span>为均匀压缩，所有透镜必须在彼此<b>几微秒内</b>起爆。一个透镜早炸，该侧压缩更快，把材料从对侧挤出去。</div>
+<div class="bg"><span class="bt">背景：</span>透镜剖面图（外快内慢的同心环）正是历史上“胖子”的透镜阵列。游戏工具栏里的“星形透镜 / 抛物线”绘制工具就是为画这种结构准备的。</div>
+<div class="dir">▶ 对应指令 2-1 THE EXPLOSIVE LENS（炸药透镜）</div>
+
+<h3 class="sec" id="ch3-4" data-imgs="mp38.png,mp39.png">内爆装置：完整武器装配 <span class="en">THE IMPLOSION DEVICE</span> <span class="pg">原书 P34–36</span></h3>
+<p><b>译文：</b>完整内爆武器是一层层嵌套的结构，每层一个职责（由外向内）：</p>
+<ul class="pts">
+<li><span class="no">1)</span><b>雷管（32–92 点）：</b>电起爆。雷管越多，波越对称；</li>
+<li><span class="no">2)</span><b>炸药透镜：</b>快/慢炸药对，把发散波塑造成会聚波；</li>
+<li><span class="no">3)</span><b>钚弹芯：</b>裂变芯，常做成空心，以获得更大压缩；</li>
+<li><span class="no">4)</span><b>点火器（中心）：</b>峰值压缩时启动链式反应的中子源。</li>
+</ul>
+<div class="box"><span class="bt">起爆序列：</span>
+1) 雷管同时起爆（t = 0）→
+2) 透镜把波塑成会聚球面（~20 μs）→
+3) 冲击波压缩弹芯（~40 μs）→
+4) 弹芯达到峰值压缩（2–3 倍密度）→
+5) 点火器释放中子 →
+6) 超临界链式反应（~1 μs 内完成）→
+7) 芯解体，反应终止。</div>
+<div class="box"><span class="bt">历史注：</span>「胖子」（长崎，1945 年 8 月 9 日）采用内爆设计，6.2 kg Pu-239，当量约 21 kt——用不到小男孩十分之一的裂变材料，实现了更大的当量。</div>
+<div class="dir">▶ 对应指令 3-1 RDS-1</div>
+
+<!-- ============ 第四章 ============ -->
+<h2 class="chap" id="ch4" data-imgs="mp40.png">第四章 · 热核武器 THERMONUCLEAR <span class="pg">原书 P37 起</span></h2>
+
+<h3 class="sec" id="ch4-1" data-imgs="mp40.png,mp41.png">聚变基础：太阳之力 <span class="en">FUSION BASICS</span> <span class="pg">原书 P37–39</span></h3>
+<p><b>译文：</b>裂变劈开重原子，<b>聚变结合轻原子</b>。这里重要的反应有两个：D-T 聚变（相对容易）和 D-D 聚变（不容易）。</p>
+<div class="box"><span class="bt">D-T 聚变（主反应）：</span><span class="formula">²H + ³H → ⁴He (3.5 MeV) + n (14.1 MeV)</span>　点火温度 ~4,500 万 K，截面 ~5 靶。最容易点燃，快中子维持燃烧——这个反应做主要工作。</div>
+<div class="box"><span class="bt">D-D 聚变（副反应）：</span><span class="formula">²H + ²H → ³He + n (2.5 MeV)　或　²H + ²H → ³H + p (4.0 MeV)</span>　点火温度 ~4 亿 K，截面 ~0.05 靶：温度高 10 倍、概率低 100 倍。没有氚在场时贡献可忽略。</div>
+<p><b>氚问题：</b>游戏原文称氚在自然界中不存在；<b>现实中天然氚极为稀少。</b>氚的半衰期为 12 年——出厂的氘化锂里不含氚。<b>游戏设定要求在爆轰现场就地生产。</b></p>
+<p><span class="formula">⁶Li + n → ³H（氚）+ ⁴He + 4.8 MeV</span> ——中子打中锂-6，就在燃料里、紧邻高温氘原子的位置造出氚，D-T 聚变瞬时点燃。这需要中子源——就是火花塞（见后两节）。</p>
+<p><b>能量特点：</b>游戏原文称，聚变每公斤释放的能量约为裂变的 4 倍；聚变燃料（锂、氘）比浓缩铀便宜得多。热核武器的兆吨级当量由此而来。</p>
+
+<h3 class="sec" id="ch4-2" data-imgs="mp41.png,mp42.png">助爆：聚变增强裂变 <span class="en">BOOSTING</span> <span class="pg">原书 P40–41</span></h3>
+<p><b>译文：</b>助爆是聚变在武器中最简单的应用：裂变弹芯内放置少量 <b>D-T 气体</b>，裂变反应把它加热到聚变。</p>
+<div class="box"><span class="bt">工作方式：</span>
+1) 内爆压缩弹芯（内含 D-T 气）→
+2) 裂变开始，芯温升至数百万 K →
+3) D-T 气达到聚变温度并点燃 →
+4) 聚变产生 14 MeV 中子 →
+5) 快中子引发<b>更多</b>裂变 →
+6) 更多裂变 = 更多热，更多热 = 更多聚变 →
+7) 比无助爆设计当量提高 <b>2–3 倍</b>。</div>
+<div class="box"><span class="bt">小结（IN BRIEF）：</span>大部分能量仍来自<b>裂变</b>（不是聚变）；只需几克 D-T 气；燃料裂变率从 ~20% 提高到 ~40%；<b>游戏原文称，现代裂变武器普遍采用助爆设计</b>。</div>
+<div class="tip"><span class="bt">入门提示：</span>注意游戏更新日志里“被压缩的 D-T 芯模拟快两倍”那条。在游戏机制中，助爆可显著提高裂变装置当量，战役中期可根据任务需求选择。</div>
+<div class="dir">▶ 对应指令 4-0 THE BOOST（助爆）</div>
+
+<h3 class="sec" id="ch4-3" data-imgs="mp42.png,mp43.png">分级武器：泰勒–乌拉姆设计 <span class="en">STAGED WEAPONS</span> <span class="pg">原书 P42–44</span></h3>
+<p><b>译文：</b>分级热核武器用裂变<b>初级</b>点燃一个独立的聚变<b>次级</b>。初级的能量经两条路径到达次级：<b>X 射线和中子</b>，各司其职。</p>
+<p><b>X 射线先到：</b>初级起爆时约 80% 的能量以 X 射线释放，以光速传播，<b>不到 2 纳秒</b>就到达次级。相比之下机械冲击波要微秒级。等冲击波到达时，聚变燃烧早已完成。</p>
+<div class="box"><span class="bt">起爆序列（图 4.3 结构：金质黑腔 + 初级裂变装置 + 次级聚变装置 + 通道填充泡沫）：</span>
+1) 初级（裂变弹）起爆（~20 kt）→
+2) X 射线以光速充满<b>辐射外壳</b>，把全部次级材料加热到数百万 K →
+3) 初级的快中子约 25 纳秒后到达 →
+4) 中子轰击<b>火花塞</b>（中心的高浓缩铀棒），引发裂变 →
+5) 火花塞裂变中子在周围的氘化锂中<b>增殖氚</b> →
+6) D-T 聚变在炽热、富氚的燃料中点燃 →
+7) 聚变中子增殖更多氚 → <b>自持燃烧</b>。</div>
+<div class="box"><span class="bt">两条能量通道：</span>
+<b>X 射线（热通道）</b>：把一切加热到极端温度，创造聚变所需的热条件；以光速传播。
+<b>中子（核通道）</b>：引发火花塞裂变，从锂-6 增殖氚——没有氚，D-T 聚变无法发生；以约 2% 光速传播。
+<b>两者缺一不可</b>：只有 X 射线，有热量没有氚；只有中子，有氚没有热量。</div>
+<div class="bg"><span class="bt">背景：</span>这就是泰勒–乌拉姆构型的核心思想：初级不靠机械冲击、靠 X 射线辐射来压缩次级（辐射内爆）。手册把能量传递拆成“热通道 + 核通道”两条，是理解后面火花塞与黑腔设计的钥匙。</div>
+<div class="dir">▶ 对应指令 4-2 RADIATION IMPLOSION（辐射内爆）</div>
+
+<h3 class="sec" id="ch4-4" data-imgs="mp44.png,mp45.png">次级：聚变级结构 <span class="en">THE SECONDARY</span> <span class="pg">原书 P45–48</span></h3>
+<p><b>译文：</b>次级是聚变能量产生的地方。它的职责是在燃料中增殖氚并燃烧氚。层次结构（由外向内）：</p>
+<ul class="pts">
+<li><span class="no">1)</span><b>贫铀外壳：</b>包裹次级的致密外壳；</li>
+<li><span class="no">2)</span><b>聚变燃料：</b>氘化锂-6（LiD）——含聚变所需的氘和锂的固体；</li>
+<li><span class="no">3)</span><b>火花塞：</b>位于几何中心的高浓缩铀棒，中子增殖器。</li>
+</ul>
+<p><b>火花塞不是第二颗炸弹</b>——它不需要达到临界。它有三个职能：</p>
+<ul class="pts">
+<li><span class="no">—</span><b>中子增殖器：</b>初级的快中子打进来，每次裂变产生 ~2.5 个新中子。一个中子进，数个中子出；</li>
+<li><span class="no">—</span><b>中子再定位器：</b>火花塞位于燃料<b>中心</b>，裂变中子向四面八方辐射进 LiD——比只从一侧穿过的初级中子效率高得多；</li>
+<li><span class="no">—</span><b>中子慢化剂：</b>致密的 HEU（19,100 kg/m³）通过散射把快中子<b>放慢</b>。这很重要，因为锂-6 对慢中子的俘获截面比快中子高 10 万倍。</li>
+</ul>
+<div class="box"><span class="bt">为什么中子能量重要（锂-6 俘获截面 vs 中子能量）：</span>
+2 MeV 快中子（初级来）≈ 0.01 靶——直接穿过｜
+1 keV 部分慢化 ≈ 1 靶——有些俘获｜
+0.025 eV 热中子 ≈ 940 靶——几乎必被俘获。</div>
+<p><b>氚增殖：</b>火花塞的中子进入 LiD 就地增殖氚——氚就在紧邻氘原子的位置生成，环境温度数百万 K，D-T 聚变立即点燃。无需储存昂贵的放射性氚。</p>
+<p><b>自持燃烧：</b>D-T 聚变产生 14.1 MeV 中子，这种快中子又能从锂-6 增殖<b>更多</b>氚，形成链条：火花塞n → Li-6+n → T+He → D+T → He+n… 一旦点燃，燃烧自持。贫铀（U-238）外壳也能被 14.1 MeV 聚变中子裂变，再增加 <b>40% 以上</b>总当量。</p>
+<div class="box"><span class="bt">没有火花塞会怎样：</span>武器失效。X 射线加热 LiD，但没有中子增殖氚，只剩 D-D 聚变可能——截面低 100 倍，温度低一个数量级。<b>当量崩落。</b></div>
+<div class="dir">▶ 对应指令 4-3 RDS-37</div>
+
+<h3 class="sec" id="ch4-5" data-imgs="mp46.png,mp47.png">火花塞设计：选材与优化 <span class="en">SPARKPLUG DESIGN</span> <span class="pg">原书 P49–51</span></h3>
+<p><b>译文：</b>火花塞吸收进来的快中子、把它们增殖，并以锂-6 能俘获的能量发射进周围燃料。<b>高浓缩铀做得最好。</b>要求：高快中子裂变截面；每次裂变高中子产额；高密度（更多散射与慢化）；在所需质量下保持<b>次临界</b>（操作安全）。</p>
+<div class="box"><span class="bt">材料比较（快裂变截面 / 每次裂变中子数 / 密度 / 裸临界质量）：</span>
+U-235 (HEU)：~1.2 b / 2.5 / 19,100 / 52 kg｜
+Pu-239：~1.8 b / 2.9 / 19,800 / 10 kg｜
+U-238 (DU)：~0.5 b / 2.5 / 19,050 / 不适用｜
+铍：不适用（n,2n）/ 2.0 / 1,850 / 不适用</div>
+<p><b>HEU（铀-235）：</b>标准火花塞材料。截面中等、产额中等，但<b>临界质量高（裸 52 kg）反而是优点</b>——可以往火花塞里装更多裂变质量而保持安全次临界。质量大 = 中子靶大 = 总裂变更。</p>
+<p><b>Pu-239：</b>数据更好——快裂变截面高 50%、每次裂变的产额高 16%。但临界质量低（10 kg）限制了安全用量。<b>每克更高效，但总量更少</b>，总中子输出反而低。</p>
+<div class="box"><span class="bt">设计权衡：</span>HEU：允许更多质量 → 更大的中子靶 → 更多总裂变，但每次裂变效率较低。Pu-239：每次裂变中子更多，但临界安全限值让你用得更少。</div>
+<p><b>为什么不用其他材料：</b><b>贫铀（U-238）</b>：只对 ~1 MeV 以上的快中子裂变，截面低（0.5 靶）——差的中子增殖器；但作为次级外壳/惰层很好，14.1 MeV 聚变中子使其高效裂变，增加约 40% 当量。<b>点火器（海胆等）</b>：从钋-210/铍反应产生一次中子爆发——但火花塞需要<b>持续</b>增殖而非单脉冲；初级已提供大量中子，火花塞的职责是把它们持续增殖。中心的点火器放一次就失效了。<b>铍</b>：发生 (n,2n) 一换二，但这只是 2 倍增殖，对裂变的 2.5 倍没有优势；它不释放能量（每次裂变附加 200 MeV 加热），且 1,850 kg/m³ 的密度几乎不减速中子——中子离开时仍然快，锂-6 抓不住。</p>
+<p><b>结论：</b>按游戏原文，HEU 是较实用的火花塞材料：足够截面抓初级中子、良好增殖、高密度慢化，且临界质量较高，可在保持次临界的游戏设定下使用较大质量。钚每克效率更高，但受临界安全约束。其他材料在“燃料中心增殖并慢化中子”这个实际职责上都更差。</p>
+
+<h3 class="sec" id="ch4-6" data-imgs="mp47.png,mp48.png">当量标度：从千吨到兆吨 <span class="en">YIELD SCALING</span> <span class="pg">原书 P52–53</span></h3>
+<p><b>译文：</b>在游戏设定中，裂变武器受临界质量限制；<b>热核武器不受同样的临界质量限制</b>，当量可随燃料量增加。</p>
+<p><b>裂变极限：</b>单级裂变武器上限约 <b>500 kt</b>。超过这个当量，效率骤降（燃料浪费），装置体积大到不切实际。</p>
+<p><b>聚变标度：</b>聚变当量随燃料质量<b>大致线性</b>增长——LiD 翻倍 ≈ 当量翻倍。实际限制是运载工具的尺寸。</p>
+<p><b>多级：</b>极端当量下，次级的辐射还能压缩<b>第三级</b>，依此类推：初级（裂变触发，~10–50 kt）→ 次级（主聚变级，~1–10 Mt）→ 第三级（附加聚变，~10–50 Mt）。</p>
+<div class="box"><span class="bt">历史当量表：</span>
+Ivy Mike（美国，1952）：10.4 Mt｜
+Castle Bravo（美国，1954）：15 Mt｜
+RDS-37（苏联，1955）：1.6 Mt｜
+沙皇炸弹（苏联，1961）：50 Mt*（*设计 100 Mt，试验时把 U-238 惰层换成铅，以半当量引爆）。</div>
+<div class="tip"><span class="bt">入门提示：</span>沙皇炸弹就是战役终局任务（4-1）。它“换铅惰层减半当量”的细节在游戏里大概率有对应玩法——贫铀外壳能多给你约 40% 聚变中子裂变的附加当量。</div>
+<div class="dir">▶ 对应指令 4-1 TSAR BOMBA（沙皇炸弹）</div>
+
+<!-- ============ 附录A 材料 ============ -->
+<h2 class="chap" id="appa" data-imgs="mp49.png,mp50.png">附录 A · 材料参考 MATERIAL REFERENCE <span class="pg">原书 P55–58</span></h2>
+<p>局方向工程师配发的全部材料规格。密度单位 kg/m³；临界质量为裸球 / 有反射层。</p>
+<h3 class="sec">裂变材料</h3>
+<table>
+<tr><th>材料</th><th>密度</th><th>临界质量</th><th>特性与用途</th></tr>
+<tr><td><b>铀-235</b></td><td>19,100</td><td>52 kg 裸 / 15 kg 反射</td><td>枪式武器的标准燃料。抗提前起爆、装配时间宽容。需从天然铀的 0.7% 浓缩到 90% 以上。用途：枪式装置主裂变燃料；热核次级的火花塞。</td></tr>
+<tr><td><b>钚-239（δ 相）</b></td><td>19,700</td><td>10 kg 裸 / 4 kg 反射</td><td>临界质量低于 U-235。必须用镓合金稳定 δ 相。自发裂变率高 → 必须内爆装配。用途：内爆弹芯。<b>不适合枪式。</b></td></tr>
+</table>
+<h3 class="sec">反射层与惰层</h3>
+<table>
+<tr><th>材料</th><th>密度</th><th>特性与用途</th></tr>
+<tr><td><b>铍反射层</b></td><td>1,858</td><td>最佳中子反射层，尽管密度低。发生 (n,2n) 一换二反应。把临界质量减半以上。用途：质量受限的紧凑设计。</td></tr>
+<tr><td><b>天然铀 U-238</b></td><td>19,050</td><td>好反射层，14.1 MeV 中子还能快裂变。作为惰层/传推层可增加 40% 以上当量。用途：惰层、辐射外壳、第三级当量增强。</td></tr>
+<tr><td><b>碳化钨</b></td><td>15,500</td><td>极硬、极致密的陶瓷。解体期间把芯保持在一起。用途：反射中子不重要、只要惯性约束时间的惰层。</td></tr>
+<tr><td><b>铅</b></td><td>11,340</td><td>便宜、致密、易加工。反射中等。用于成本重于性能的场合。用途：廉价惰层、辐射屏蔽、非裂变辐射外壳。</td></tr>
+<tr><td><b>钢</b></td><td>7,850</td><td>标准结构金属。反射中等。易加工焊接。用途：外壳、枪管、结构件、屏障。</td></tr>
+</table>
+<h3 class="sec">聚变燃料</h3>
+<table>
+<tr><th>材料</th><th>密度</th><th>特性与用途</th></tr>
+<tr><td><b>氘化锂 LiD</b></td><td>828</td><td>固体聚变燃料。中子轰击就地增殖氚。稳定、可储存、无放射性衰变问题。用途：热核次级主燃料。</td></tr>
+<tr><td><b>DT 冰</b></td><td>250</td><td>氘氚冷冻混合物。最高聚变截面，但需低温储存。氚会衰变（12 年半衰期）。用途：助爆气体、高性能聚变燃料。</td></tr>
+</table>
+<h3 class="sec">炸药</h3>
+<table>
+<tr><th>材料</th><th>密度</th><th>特性与用途</th></tr>
+<tr><td><b>PBX-9501（快 HE）</b></td><td>1,858</td><td>HMX 塑性粘结炸药。爆速 8,800 m/s。武器系统标准高性能炸药。用途：炸药透镜外层、通用高能炸药。</td></tr>
+<tr><td><b>巴拉托（慢 HE）</b></td><td>2,600</td><td>硝酸钡/TNT 混合物。爆速 5,100 m/s。为波形控制特意做慢。用途：炸药透镜内层、冲击波成形。</td></tr>
+</table>
+<h3 class="sec">结构与其他</h3>
+<table>
+<tr><th>材料</th><th>密度</th><th>特性与用途</th></tr>
+<tr><td><b>金黑腔内衬</b></td><td>19,320</td><td>高 Z 金属，X 射线反照率 85%。高效反射并引导辐射。用途：分级热核装置的黑腔壁。</td></tr>
+<tr><td><b>聚苯乙烯泡沫</b></td><td>45</td><td>低密度塑料泡沫。对 X 射线透明，辐射下高效烧蚀。用途：初级与次级之间的辐射通道填充。</td></tr>
+</table>
+<div class="bg"><span class="bt">背景：</span>这份规格表与游戏材料面板一一对应。注意真实历史上“金黑腔”的奢侈配置源自 ICF（惯性约束聚变）研究的传统——高 Z 材料对 X 射线不透明，能把辐射困在腔内。游戏中后期做分级装置时，黑腔材料就是从这里选。</div>
+
+<!-- ============ 附录B 术语表 ============ -->
+<h2 class="chap" id="appb" data-imgs="mp51.png,mp52.png">附录 B · 术语表 GLOSSARY OF TERMS <span class="pg">原书 P59–62</span></h2>
+<p>本书全部译名以此表为准（原书词条按字母序，译文保留原序）：</p>
+<table>
+<tr><th>英文</th><th>本书译名</th><th>释义</th></tr>
+<tr><td>Ablation</td><td><b>烧蚀</b></td><td>强辐射使材料表面气化。热核爆中的次要效应；直接 X 射线加热与中子驱动的氚增殖是主要机制。</td></tr>
+<tr><td>Boosting</td><td><b>助爆</b></td><td>向裂变弹芯注入 D-T 气体，借聚变中子提高当量。</td></tr>
+<tr><td>Chain Reaction</td><td><b>链式反应</b></td><td>一次裂变放出的中子引发更多裂变的自持系列。</td></tr>
+<tr><td>Chapman–Jouguet Pressure</td><td><b>查普曼–儒盖压力（CJ 压力）</b></td><td>爆轰波前锋后方的压力，军用炸药典型 20–40 GPa。</td></tr>
+<tr><td>Critical Mass</td><td><b>临界质量</b></td><td>维持链式反应（k ≥ 1）所需裂变材料的最小质量。</td></tr>
+<tr><td>Deflagration</td><td><b>爆燃</b></td><td>亚声速燃烧。黑火药是爆燃，不爆轰。</td></tr>
+<tr><td>Detonation</td><td><b>爆轰</b></td><td>超声速燃烧，反应前锋快于材料中的声速。</td></tr>
+<tr><td>Detonation Velocity</td><td><b>爆速</b></td><td>爆轰波穿过炸药的速度，PBX-9501 为 8.8 km/s。</td></tr>
+<tr><td>Explosive Lens</td><td><b>炸药透镜</b></td><td>快慢炸药组合成特定形状，把发散波转换为会聚波。</td></tr>
+<tr><td>Fissile</td><td><b>易裂变材料</b></td><td>能用慢中子维持链式反应，U-235、Pu-239、U-233。</td></tr>
+<tr><td>Fission</td><td><b>裂变</b></td><td>重核分裂为较轻原子核，释放能量与中子。</td></tr>
+<tr><td>Fusion</td><td><b>聚变</b></td><td>轻核聚合成较重原子核并释放能量。太阳与氢弹的动力。</td></tr>
+<tr><td>Gun-Type</td><td><b>枪式</b></td><td>把一块次临界材料射向另一块来完成装配的武器设计。</td></tr>
+<tr><td>Hohlraum</td><td><b>黑腔（辐射腔）</b></td><td>辐射空腔。初级的 X 射线充满此腔并压缩次级。</td></tr>
+<tr><td>Implosion</td><td><b>内爆</b></td><td>用周围炸药的会聚冲击波向内压缩。</td></tr>
+<tr><td>Initiator</td><td><b>点火器（中子源）</b></td><td>位于弹芯中心的中子源，峰值压缩时启动链式反应。</td></tr>
+<tr><td>k-effective</td><td><b>k 有效值（有效增殖系数）</b></td><td>中子增殖因子。k&lt;1 次临界；k=1 临界；k&gt;1 超临界。</td></tr>
+<tr><td>Lithium Deuteride (LiD)</td><td><b>氘化锂</b></td><td>受中子轰击就地增殖氚的固体聚变燃料。</td></tr>
+<tr><td>Mean Free Path</td><td><b>平均自由程</b></td><td>中子与原子核相互作用前飞行的平均距离。</td></tr>
+<tr><td>Pit</td><td><b>弹芯</b></td><td>内爆武器的裂变芯，常为空心钚球。</td></tr>
+<tr><td>Pre-detonation</td><td><b>提前起爆</b></td><td>杂散中子引发过早链式反应，当量下降（哑爆）。</td></tr>
+<tr><td>Primary</td><td><b>初级</b></td><td>分级热核武器中的裂变触发级。</td></tr>
+<tr><td>Pusher</td><td><b>传推层</b></td><td>位于炸药与弹芯之间、平稳传递冲击动量的材料。</td></tr>
+<tr><td>Radiation Case</td><td><b>辐射外壳</b></td><td>容纳初级 X 射线并把它们导向次级的致密外壳。</td></tr>
+<tr><td>Reflector</td><td><b>（中子）反射层</b></td><td>包围弹芯、把逃逸中子散射回燃料的材料。</td></tr>
+<tr><td>Secondary</td><td><b>次级</b></td><td>热核武器的聚变级，被初级辐射压缩。</td></tr>
+<tr><td>Simultaneity</td><td><b>同时性</b></td><td>多雷管起爆的时间精度。误差导致不对称内爆。</td></tr>
+<tr><td>Sparkplug</td><td><b>火花塞</b></td><td>次级中心的高浓缩铀棒：增殖中子、慢化中子，点燃氚燃烧。</td></tr>
+<tr><td>Spontaneous Fission</td><td><b>自发裂变</b></td><td>无中子轰击的随机裂变。Pu-240 中含量高，否决枪式钚弹。</td></tr>
+<tr><td>Subcritical</td><td><b>次临界</b></td><td>k&lt;1，链式反应无法自持。</td></tr>
+<tr><td>Supercritical</td><td><b>超临界</b></td><td>k&gt;1，链式反应指数增长。</td></tr>
+<tr><td>Tamper</td><td><b>惰层（压紧层）</b></td><td>提供惯性约束的重材料，反应期间把芯保持在一起。</td></tr>
+<tr><td>Teller–Ulam</td><td><b>泰勒–乌拉姆（构型）</b></td><td>分级辐射内爆设计，游戏原文称其为现代热核武器的典型构型。</td></tr>
+<tr><td>Tritium Breeding</td><td><b>氚增殖</b></td><td>就地造氚：⁶Li + n → T + ⁴He + 4.8 MeV。火花塞的中子在 LiD 中增殖氚，支撑 D-T 聚变；没有增殖，只剩低效的 D-D 聚变。</td></tr>
+<tr><td>Yield</td><td><b>当量</b></td><td>释放的总能量，通常以千吨（kt）或兆吨（Mt）TNT 当量计。</td></tr>
+</table>
+
+<!-- ============ 附录C 历史 ============ -->
+<h2 class="chap" id="appc" data-imgs="mp53.png">附录 C · 历史计划 HISTORICAL PROGRAMS <span class="pg">原书 P63–64</span></h2>
+<h3 class="sec">曼哈顿计划（美国，1942–1945）</h3>
+<p>第一个核武器计划，峰值雇佣 12.5 万人；吸收了英国更早的「合金管工程」（1941），其 MAUD 报告已确立裂变武器可行。同时发展枪式（小男孩）与内爆（胖子）两种设计，由 J. 罗伯特·奥本海默在洛斯阿拉莫斯领导。</p>
+<ul class="pts">
+<li><span class="no">—</span>Trinity 试验：1945 年 7 月 16 日——首次核爆（内爆，21 kt）；</li>
+<li><span class="no">—</span>小男孩：1945 年 8 月 6 日——广岛（枪式，15 kt）；</li>
+<li><span class="no">—</span>胖子：1945 年 8 月 9 日——长崎（内爆，21 kt）。</li>
+</ul>
+<h3 class="sec">苏联计划（USSR，1943–1961）</h3>
+<p>由伊戈尔·库尔恰托夫领导，安德烈·萨哈罗夫与雅科夫·泽利多维奇负责理论工作，并开展了独立研究。</p>
+<ul class="pts">
+<li><span class="no">—</span>RDS-1「乔一号」：1949 年 8 月 29 日——首次苏联试验（内爆，22 kt）；</li>
+<li><span class="no">—</span>RDS-6s：1953 年 8 月 12 日——首次苏联热核试验（400 kt）；</li>
+<li><span class="no">—</span>RDS-37：1955 年 11 月 22 日——首枚真正的氢弹（1.6 Mt）；</li>
+<li><span class="no">—</span>沙皇炸弹：1961 年 10 月 30 日——史上最大爆轰（50 Mt）。</li>
+</ul>
+<h3 class="sec">英国计划（UK，1947–1957）</h3>
+<p>战后被排除出美国协作体系后独立发展。1952 年首次试验，1957 年具备热核能力。</p>
+<h3 class="sec">关键人物</h3>
+<ul class="pts">
+<li><span class="no">—</span><b>J. 罗伯特·奥本海默：</b>曼哈顿计划科学主管；</li>
+<li><span class="no">—</span><b>爱德华·泰勒：</b>「氢弹之父」（与乌拉姆合作）；</li>
+<li><span class="no">—</span><b>斯坦尼斯瓦夫·乌拉姆：</b>分级辐射内爆共同发明人；</li>
+<li><span class="no">—</span><b>伊戈尔·库尔恰托夫：</b>苏联计划科学主管；</li>
+<li><span class="no">—</span><b>安德烈·萨哈罗夫：</b>苏联氢弹关键贡献者。</li>
+</ul>
+<div class="box"><span class="bt">局内注记（BUREAU NOTE）：</span>本模拟设定于<b>虚构的 1954 年苏联计划</b>。历史与指令冲突时，游戏以界面指令为准。感谢你的服务，同志。</div>
+
+<!-- ============ 附录D 操作与快捷键 ============ -->
+<h2 class="chap" id="appd" data-imgs="mp54.png,mp55.png,mp56.png">附录 D · 工具操作与快捷键 TOOL CONTROLS <span class="pg">原书 P65–67 + 游戏内快捷键弹窗</span></h2>
+<p>以下快捷键作用于设计工作台。在输入框中打字时字母键不触发快捷键。</p>
+<h3 class="sec">网格与工具</h3>
+<table>
+<tr><th>按键</th><th>功能</th></tr>
+<tr><td><kbd>左键 / 拖动</kbd></td><td>使用所选工具；圆、椭圆、矩形、星形透镜、曲线工具先创建预览。</td></tr>
+<tr><td><kbd>右键拖动 / 滚轮</kbd></td><td>右键拖动平移网格；滚轮向光标位置缩放。</td></tr>
+<tr><td><kbd>Ctrl + 左键</kbd></td><td>取光标下的材料（不涂刷，即吸管）。</td></tr>
+<tr><td><kbd>空格</kbd></td><td>放置当前可见的形状预览（等同点击 Place）。试爆运行中 = 暂停/继续。</td></tr>
+<tr><td><kbd>Esc</kbd></td><td>取消移动中的拖动、框选、当前选择或粘贴预览；关闭菜单。</td></tr>
+<tr><td><kbd>旋钮 / 数字键</kbd></td><td>旋钮左右拖动或用滚轮调节，也可在其下方输入精确值。</td></tr>
+<tr><td><kbd>0–T</kbd></td><td>设置计时器后，点击 Edit Placed（编辑已放置件），再点击一个已存在的发生器（generator）；Esc 取消。</td></tr>
+<tr><td><kbd>Shift + 点击</kbd></td><td>把放射笔刷（Radial Brush）的中心移到点击的格子。</td></tr>
+</table>
+<h3 class="sec">撤销与剪贴板</h3>
+<table>
+<tr><th>按键</th><th>功能</th></tr>
+<tr><td><kbd>Ctrl + Z</kbd></td><td>撤销上一步编辑。</td></tr>
+<tr><td><kbd>Ctrl + Shift + Z / Ctrl + Y</kbd></td><td>重做已撤销的操作。</td></tr>
+<tr><td><kbd>Ctrl + C</kbd></td><td>把当前选中部分复制进剪贴板历史（保密档案登记册）。</td></tr>
+<tr><td><kbd>Ctrl + V</kbd></td><td>预览当前剪贴板历史记录；左键点击放置。</td></tr>
+</table>
+<h3 class="sec">选择与移动</h3>
+<table>
+<tr><th>按键</th><th>功能</th></tr>
+<tr><td><kbd>框选：拖动</kbd></td><td>画选择框；然后在框内拖动以移动这些格子。</td></tr>
+<tr><td><kbd>拖动：drag</kbd></td><td>移动相连的整块材料区域。</td></tr>
+<tr><td><kbd>Shift + 拖动</kbd></td><td>把移动锁到主导的水平或垂直轴（直线移动）。</td></tr>
+<tr><td><kbd>方向键 / Shift</kbd></td><td>按 1 格（或按住 Shift 按 10 格）轻推选择区。</td></tr>
+<tr><td><kbd>R / Shift + R</kbd></td><td>选择区顺时针 / 逆时针旋转 90°。</td></tr>
+<tr><td><kbd>M / Shift + M</kbd></td><td>选择区水平 / 垂直镜像。</td></tr>
+<tr><td><kbd>Home</kbd></td><td>把已移动的选择区放回它原来的位置。</td></tr>
+</table>
+<h3 class="sec">标记与曲线</h3>
+<table>
+<tr><th>按键</th><th>功能</th></tr>
+<tr><td><kbd>G / Shift + G</kbd></td><td>显示/隐藏构造标记；切换你画过的构造辅助线。</td></tr>
+<tr><td><kbd>悬停 + Backspace / Delete</kbd></td><td>删除高亮的构造标记（不动材料格子）。</td></tr>
+<tr><td><kbd>曲线：拖动 / 点击边缘</kbd></td><td>画轮廓、拖动节点，或点击边缘添加节点。</td></tr>
+<tr><td><kbd>曲线：Shift + 拖动</kbd></td><td>节点沿轮廓中心远近移动，不改变角度。</td></tr>
+<tr><td><kbd>曲线：Ctrl + 点击</kbd></td><td>切换节点的切线手柄（覆盖材料吸管）。</td></tr>
+<tr><td><kbd>曲线：Alt + 点击 / 双击</kbd></td><td>删除节点，或在平滑与拐角之间切换。</td></tr>
+<tr><td><kbd>曲线：+ 孔洞</kbd></td><td>点击 Hole 后在轮廓内拖动，再切出一个环。</td></tr>
+<tr><td><kbd>曲线：点击已放置的曲线</kbd></td><td>在网格上重新打开已保存的曲线以重新塑形。</td></tr>
+</table>
+<h3 class="sec">视图与界面（来自游戏内快捷键参考弹窗）</h3>
+<table>
+<tr><th>按键</th><th>功能</th></tr>
+<tr><td><kbd>F</kbd></td><td>把画板适配进视野。</td></tr>
+<tr><td><kbd>小键盘 + / −</kbd></td><td>放大 / 缩小工作台。</td></tr>
+<tr><td><kbd>W A S D / 方向键</kbd></td><td>平移视野（按住 Shift 加速）。</td></tr>
+<tr><td><kbd>Alt（按住）</kbd></td><td>暂时禁用对齐吸附。</td></tr>
+<tr><td><kbd>Ctrl + / Ctrl − / Ctrl 0</kbd></td><td>界面缩放 / 恢复自动。</td></tr>
+<tr><td><kbd>F11</kbd></td><td>全屏。</td></tr>
+<tr><td><kbd>F12</kbd></td><td>截图（存入 Steam）。</td></tr>
+<tr><td><kbd>?</kbd></td><td>打开快捷键列表。</td></tr>
+</table>
+<div class="tip"><span class="bt">入门提示：</span>最值得先记住的五组：<kbd>Ctrl+Z</kbd> 撤销、<kbd>Ctrl+左键</kbd> 吸材料、<kbd>空格</kbd> 放置/暂停、<kbd>M / Shift+M</kbd> 镜像（内爆对称性利器）、<kbd>Ctrl+C/V</kbd> 复用画好的透镜和枪管。</div>
+
+</main>
+</div>
+<button id="topbtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ 回到顶部</button>
+
+<script>
+const LABELS = {
+ 'mp22.png':'原书 P1–2 · 封面与总目录','mp23.png':'原书 P3–4 · 爆轰基础','mp24.png':'原书 P5–6 · 爆轰基础（完）/ 爆炸成形',
+ 'mp25.png':'原书 P7–8 · 爆炸成形（完）/ 发射药物理','mp26.png':'原书 P9–10 · 发射药物理','mp27.png':'原书 P11–12 · 原子',
+ 'mp28.png':'原书 P13–14 · 原子（完）/ 链式反应','mp29.png':'原书 P15–16 · 链式反应','mp30.png':'原书 P17–18 · 临界质量',
+ 'mp31.png':'原书 P19–20 · 临界质量（完）/ 枪式装配','mp32.png':'原书 P21–22 · 枪式装配','mp33.png':'原书 P23–24 · 中子经济',
+ 'mp34.png':'原书 P25–26 · 中子经济（完）/ 篇章页','mp35.png':'原书 P27–28 · 钚问题','mp36.png':'原书 P29–30 · 内爆物理',
+ 'mp37.png':'原书 P31–32 · 内爆物理（完）/ 炸药透镜','mp38.png':'原书 P33–34 · 炸药透镜（完）/ 内爆装置','mp39.png':'原书 P35–36 · 内爆装置',
+ 'mp40.png':'原书 P37–38 · 聚变基础','mp41.png':'原书 P39–40 · 聚变基础（完）/ 助爆','mp42.png':'原书 P41–42 · 助爆（完）/ 分级武器',
+ 'mp43.png':'原书 P43–44 · 分级武器','mp44.png':'原书 P45–46 · 次级','mp45.png':'原书 P47–48 · 次级（完）',
+ 'mp46.png':'原书 P49–50 · 火花塞设计','mp47.png':'原书 P51–52 · 火花塞设计（完）/ 当量标度','mp48.png':'原书 P53–54 · 当量标度（完）/ 篇章页',
+ 'mp49.png':'原书 P55–56 · 附录A 材料','mp50.png':'原书 P57–58 · 附录A 材料（完）','mp51.png':'原书 P59–60 · 附录B 术语表',
+ 'mp52.png':'原书 P61–62 · 附录B 术语表（完）','mp53.png':'原书 P63–64 · 附录C 历史','mp54.png':'原书 P65–66 · 附录D 操作与快捷键',
+ 'mp55.png':'原书 P67–68 · 附录D（完）','mp56.png':'游戏内快捷键弹窗 · KEYBOARD REFERENCE'
+};
+const stage=document.getElementById('vstage'), img=document.getElementById('vimg'),
+      cap=document.getElementById('vcap'), thumbs=document.getElementById('vthumbs');
+const secs=[...document.querySelectorAll('[data-imgs]')];
+const V='?v=20261101c';
+let curSec=null, idx=0, scale=1, tx=0, ty=0, fresh=true;
+const files=()=>curSec?curSec.dataset.imgs.split(',').filter(Boolean):[];
+function apply(){ img.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')'; }
+function fit(){
+  const w=stage.clientWidth, h=stage.clientHeight;
+  const s=Math.min(w/1800, h/1125);
+  scale=s; tx=(w-1800*s)/2; ty=(h-1125*s)/2; apply();
+}
+function show(i){
+  const f=files(); if(!f.length) return;
+  idx=(i+f.length)%f.length;
+  img.src='manual/'+f[idx]+V;
+  cap.textContent=LABELS[f[idx]]||f[idx];
+  [...thumbs.children].forEach((t,j)=>t.classList.toggle('cur',j===idx));
+}
+function buildThumbs(){
+  thumbs.innerHTML='';
+  files().forEach((f,j)=>{
+    const t=document.createElement('img');
+    t.src='manual/'+f+V; t.title=LABELS[f]||f;
+    t.onerror=()=>{ const n=(+t.dataset.rc||0); if(n<5){ t.dataset.rc=n+1; setTimeout(()=>{ t.src='manual/'+f+'?t='+Date.now(); },400*(n+1)); } };
+    t.onclick=()=>{ show(j); fresh=false; };
+    thumbs.appendChild(t);
+  });
+}
+function setSection(el){
+  if(el===curSec) return;
+  curSec=el; idx=0; fresh=true; buildThumbs(); show(0);
+}
+img.addEventListener('load',()=>{ if(fresh) fit(); });
+img.addEventListener('error',()=>{ const n=(+img.dataset.rc||0); if(n<5){ img.dataset.rc=n+1; setTimeout(()=>{ const f=files()[idx]; if(f) img.src='manual/'+f+'?t='+Date.now(); },400*(n+1)); return; } cap.textContent='⚠ 图片加载失败：'+(files()[idx]||'').split('?')[0]+'（已自动重试，请检查网络连接或图片文件是否完整）'; });
+stage.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const r=stage.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const k=e.deltaY<0?1.15:1/1.15, ns=Math.min(8,Math.max(0.05,scale*k));
+  tx=mx-(mx-tx)*ns/scale; ty=my-(my-ty)*ns/scale; scale=ns; fresh=false; apply();
+},{passive:false});
+let drag=null;
+stage.addEventListener('pointerdown',e=>{ drag={x:e.clientX-tx,y:e.clientY-ty}; img.classList.add('grabbing'); stage.setPointerCapture(e.pointerId); });
+stage.addEventListener('pointermove',e=>{ if(drag){ tx=e.clientX-drag.x; ty=e.clientY-drag.y; fresh=false; apply(); } });
+stage.addEventListener('pointerup',()=>{ drag=null; img.classList.remove('grabbing'); });
+document.getElementById('bnext').onclick=()=>{ show(idx+1); fresh=false; };
+document.getElementById('bprev').onclick=()=>{ show(idx-1); fresh=false; };
+document.getElementById('bzin').onclick=()=>{ scale=Math.min(8,scale*1.25); fresh=false; apply(); };
+document.getElementById('bzout').onclick=()=>{ scale=Math.max(0.05,scale/1.25); fresh=false; apply(); };
+document.getElementById('bfit').onclick=()=>{ fit(); };
+document.getElementById('breset').onclick=()=>{ scale=1; tx=0; ty=0; fresh=false; apply(); };
+stage.addEventListener('dblclick',()=>fit());
+/* 图随文动 */
+let ticking=false;
+function spy(){
+  const line=window.innerHeight*0.35; let cur=secs[0];
+  for(const s of secs){ if(s.getBoundingClientRect().top<=line) cur=s; else break; }
+  if(cur) setSection(cur);
+  ticking=false;
+}
+window.addEventListener('scroll',()=>{ if(!ticking){ ticking=true; requestAnimationFrame(spy); } },{passive:true});
+/* 初始定位（支持 #锚点 直达） */
+window.addEventListener('load',()=>{
+  let target=null;
+  if(location.hash){ const el=document.querySelector(location.hash); if(el){ let n=el; while(n && !n.dataset.imgs) n=n.parentElement; target=n; } }
+  if(!target){ const r=secs[0].getBoundingClientRect(); if(r.top<=window.innerHeight*0.35) target=secs[0]; }
+  if(target) setSection(target);
+  spy();
+});
+const topbtn=document.getElementById('topbtn');
+window.addEventListener('scroll',()=>{ topbtn.style.display=window.scrollY>600?'block':'none'; },{passive:true});
+</script>
+</body>
+</html>

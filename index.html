@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuclear Design Bureau 主界面标注说明</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0e10;
+    color: #d8d2c4;
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    line-height: 1.6;
+  }
+  header {
+    padding: 14px 24px;
+    border-bottom: 1px solid #3a2a20;
+    background: #14110e;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 19px; color: #e2543e; letter-spacing: 1px; }
+  header .sub { font-size: 12.5px; color: #9a917f; }
+  header .actions { margin-left: auto; display: flex; gap: 8px; }
+  header .actions a, header .actions button {
+    background: #241f18; color: #e8c06a; border: 1px solid #4a3a28;
+    border-radius: 4px; padding: 5px 14px; font-size: 13px;
+    text-decoration: none; cursor: pointer;
+  }
+  header .actions a:hover, header .actions button:hover { background: #35291c; }
+  main {
+    display: flex; gap: 20px; padding: 20px 24px;
+    max-width: 1600px; margin: 0 auto; align-items: flex-start;
+  }
+  .shot-wrap { flex: 1.35; position: sticky; top: 16px; }
+  .viewer-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 12px; color: #9a917f; }
+  .viewer-tools button {
+    background: #241f18; color: #d8d2c4; border: 1px solid #4a3a28;
+    border-radius: 4px; padding: 3px 12px; cursor: pointer; font-size: 13px;
+  }
+  .viewer-tools button:hover { background: #35291c; }
+  #zoomLabel { min-width: 44px; text-align: center; color: #e8c06a; }
+  .viewer {
+    position: relative; height: 78vh; overflow: hidden;
+    border: 1px solid #4a3a28; border-radius: 6px; background: #000; cursor: grab;
+  }
+  .viewer.dragging { cursor: grabbing; }
+  .canvas { position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 1800 / 1125; transform-origin: 0 0; }
+  .canvas img { display: block; width: 100%; height: auto; pointer-events: none; }
+  .badge {
+    position: absolute; width: 28px; height: 28px; border-radius: 50%;
+    background: #e2543e; color: #fff; font-weight: bold; font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 0 3px rgba(226,84,62,.35), 0 2px 6px rgba(0,0,0,.6);
+    transform: translate(-50%, -50%);
+  }
+  .legend { flex: 1; min-width: 380px; }
+
+  /* 折叠卡片 */
+  details.card {
+    background: #171512; border: 1px solid #3a332a; border-radius: 6px;
+    margin-bottom: 12px; overflow: hidden;
+  }
+  details.card > summary {
+    cursor: pointer; list-style: none; padding: 11px 14px;
+    display: flex; align-items: baseline; gap: 8px;
+    border-left: 4px solid #e2543e;
+  }
+  details.card > summary::-webkit-details-marker { display: none; }
+  details.card > summary .num {
+    flex-shrink: 0; width: 22px; height: 22px; line-height: 22px; text-align: center;
+    background: #e2543e; color: #fff; border-radius: 50%; font-size: 13px; font-weight: bold;
+    align-self: center;
+  }
+  details.card > summary .t { font-size: 14.5px; font-weight: bold; color: #f0e8d8; }
+  details.card > summary .en { font-size: 11.5px; color: #8f8674; }
+  details.card > summary .key { font-size: 12.5px; color: #b8af9c; margin-left: auto; text-align: right; max-width: 55%; align-self: center; }
+  details.card > summary .chev { color: #e2543e; font-size: 12px; align-self: center; }
+  details.card[open] > summary { background: #1e1a15; border-bottom: 1px solid #3a332a; }
+  details.card[open] > summary .chev { transform: rotate(90deg); }
+  .cbody { padding: 12px 16px; }
+  .cbody p, .cbody li { font-size: 13.5px; color: #c4bba8; }
+  .cbody p { margin-bottom: 8px; }
+  .cbody b { color: #e8c06a; }
+  .cbody ul { margin: 4px 0 10px 4px; list-style: none; }
+  .cbody li { margin-bottom: 3px; padding-left: 8px; }
+  .dlg {
+    background: #1c1a12; border: 1px dashed #6a5a34; border-radius: 6px;
+    padding: 8px 12px; margin: 8px 0; font-size: 13px; color: #d8c48a;
+  }
+  .dlg .who { color: #e8c06a; font-weight: bold; font-size: 12px; letter-spacing: 1px; }
+  .note {
+    background: #14181a; border-left: 3px solid #4a7a8a; padding: 8px 12px;
+    margin: 8px 0; font-size: 13px; color: #a8c2c8;
+  }
+  .sec-title { color: #6fd3a8; font-weight: bold; font-size: 13px; margin: 10px 0 4px; }
+  .no { color: #6a6252; margin-right: 6px; font-family: Consolas, monospace; font-size: 12px; }
+  .warn { color: #e0705a; }
+  .cardlink {
+    display: inline-block; margin: 4px 0; padding: 4px 12px;
+    background: #241f18; border: 1px solid #4a3a28; border-radius: 4px;
+    color: #e8c06a; text-decoration: none; font-size: 12.5px;
+  }
+  .cardlink:hover { background: #35291c; }
+  .tipbox {
+    background: #1b1a14; border: 1px dashed #6a5a34; border-radius: 6px;
+    padding: 12px 16px; font-size: 13.5px; color: #d8c48a;
+  }
+  @media (max-width: 1000px) {
+    main { flex-direction: column; }
+    .shot-wrap { position: static; }
+    details.card > summary .key { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>NUCLEAR DESIGN BUREAU · 主界面全标注</h1>
+  <span class="sub">序号对应左图红色标记 · 点标题展开完整说明</span>
+  <div class="actions">
+    <a href="manual.html">📖 野战手册全文翻译</a>
+    <button id="expandAll">全部展开</button>
+    <button id="collapseAll">全部收起</button>
+  </div>
+</header>
+<main>
+  <div class="shot-wrap">
+    <div class="viewer-tools">
+      <button id="zoomOut">−</button>
+      <span id="zoomLabel">100%</span>
+      <button id="zoomIn">＋</button>
+      <button id="zoomReset">重置</button>
+      <button id="zoomFit">适应窗口</button>
+      <span style="margin-left:8px">滚轮缩放 · 按住拖动平移</span>
+    </div>
+    <div class="viewer" id="viewer">
+      <div class="canvas" id="canvas">
+        <img src="assets/ndb_ui_screenshot2.png" alt="游戏主界面">
+        <span class="badge" style="left:81%;top:6.5%">1</span>
+        <span class="badge" style="left:30%;top:12%">2</span>
+        <span class="badge" style="left:44%;top:52%">3</span>
+        <span class="badge" style="left:8%;top:55%">4</span>
+        <span class="badge" style="left:88%;top:24%">5</span>
+        <span class="badge" style="left:88%;top:55%">6</span>
+        <span class="badge" style="left:88%;top:87%">7</span>
+        <span class="badge" style="left:66%;top:16.5%">8</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+
+    <details class="card" open>
+      <summary><span class="num">5</span><span class="t">任务指令卡</span><span class="en">DIRECTIVE</span><span class="key">战役的“工作订单”：读任务 → ACCEPT → 完成后 REGISTER 提交</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <p>整个战役模式的核心。点 <b>DOSSIER</b> 打开任务档案；<b>REPLAY</b> 重看剧情；<b>RELOAD</b> 重置任务状态；<b>REGISTER</b> 提交成果登记完成。</p>
+        <p><b>任务档案（STATE DIRECTIVE）抬头</b>：「绝密 · 中型机器制造部」（现实中主管苏联核工业的秘密部委）。指令 0-0 的正文：高级工程师彼得罗夫欢迎你，带你熟悉设施；目标是完成入职引导；署名「库尔恰托夫」。</p>
+        <div class="dlg"><span class="who">引导对话（已完成）：</span>“入职引导完成。你现已获准开始指令 1-0。到档案袋报到，接受你的第一个正式任务。”</div>
+        <div class="note">玩战役的节奏：每接一条新指令，先去<a class="cardlink" href="manual.html">野战手册</a>读对应章节（书页上的「SEE DIRECTIVE X-X」红章就是知识点与任务的对应表），写一句话设计论点，再上蓝图。</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">6</span><span class="t">材料面板</span><span class="en">MATERIALS</span><span class="key">9 大类材料 = 游戏知识框架；Air 也是材料，空格是组件</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <p>你的“颜料盒”。搜索框可快速定位；把常用材料拖进 <b>QUICK SLOTS</b>（数字键 1–9 取用）；点选材料后顶部信息栏显示密度、临界质量等物性。</p>
+        <div class="dlg"><span class="who">引导对话：</span>“在这里选择材料。设计局已按功能将它们分类。”</div>
+        <div class="sec-title">9 大分类（完整翻译见野战手册附录 A）</div>
+        <ul>
+          <li><b>CORES 核芯</b>（铀系）：U 天然铀、U-235、HEU 高浓缩铀、SP；</li>
+          <li><b>PITS 弹芯</b>（钚系）：Pu、Pu-239、Pu-Ga 钚镓合金、PG；</li>
+          <li><b>REFLECTORS 反射层</b>：Pb 铅、<b>Be 铍</b>、WC 碳化钨、C 碳、CC、Al 铝、St 钢、DU 贫铀、Au 金、Ti 钛、W 钨、Ta 钽、Os 锟、Cu 铜、Diamond 金刚石、Alumina 氧化铝、Concrete 混凝土；</li>
+          <li><b>FUSION 聚变燃料</b>：LiD 氘化锂、DT gas 氘氚气体、Foam 泡沫、DT ice 氘氚冰；</li>
+          <li><b>PROPELLANTS 发射药</b>（枪式动力）：Powder 黑火药、Primer 底火；</li>
+          <li><b>EXPLOSIVES 炸药</b>（内爆驱动）：HE/PBX 高能炸药、Baratol 巴拉托、Bridge 传爆桥、Fuse 引信；</li>
+          <li><b>ABSORBERS 中子吸收体</b>（安全次临界用）：B₄C 碳化硼、B-poly 含硼聚乙烯；</li>
+          <li><b>INITIATORS 点火器</b>（起爆注中子）：Urchin“海胆”、D-T gen 氘氚发生器；</li>
+          <li><b>FILLERS 填充物</b>：Air 空气、Hot gas 热气体、Water 水、PE 聚乙烯、Rubber 橡胶、Wood 木材、Aerogel 气凝胶。</li>
+        </ul>
+        <div class="note">这份分类表就是游戏的知识框架：<b>选芯 → 包反射层 → 选驱动方式（发射药/炸药）→ 加中子源点火</b>。各材料的密度、临界质量与推荐用途详见<a class="cardlink" href="manual.html#appa">野战手册 · 附录 A 材料参考</a>。</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">2</span><span class="t">绘图工具栏</span><span class="en">TOOLBAR</span><span class="key">画图 / 镜像 / 标记 / 辅助线 / 撤销；完整快捷键见手册附录 D</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <div class="dlg"><span class="who">引导对话：</span>“这些是你的建造工具。你可以画形状、移动部件、复制它们。每节课会高亮你需要的工具，所以现在不需要死记。要擦除，使用 Air 材料，或选中部件按 Delete；Ctrl+Z 撤销任何一步。”</div>
+        <div class="dlg"><span class="who">引导对话（工具菜单展开时）：</span>完整工具列表——笔刷 / 填充 / 椭圆 / <b>星形透镜</b> / <b>抛物线</b> / 棱镜 / 拖动 / 放射 / 圆 / 矩形 / 曲线 / 参考线 / 选择。</div>
+        <p>右侧四组数字是<b>模拟计时器</b>（毫秒 / 微秒 / 纳秒 / 皮秒）——核爆物理发生在极短时间尺度，引爆时这里会疯狂跳动。</p>
+        <div class="note">星形透镜与抛物线工具就是为内爆式的炸药透镜结构准备的；<kbd>M / Shift+M</kbd> 水平/垂直镜像是保证对称性的利器。全部按键见<a class="cardlink" href="manual.html#appd">野战手册 · 附录 D 操作与快捷键</a>。</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">8</span><span class="t">网格放置选项</span><span class="en">FILL AIR / REPLACE</span><span class="key">放置模式切换；PLACED 计数用格量</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <p>网格顶部右侧的小开关：<b>FILL AIR</b> 与 <b>REPLACE</b> 切换放置模式；<b>PLACED</b> 统计已使用的格子数。</p>
+        <div class="note">攻略核心原则：<b>空格子（空气）是有功能的组件</b>——枪管与弹丸之间留 1–2 格气隙反而弹速更快（游戏手册出处：第一章「炮膛间隙」）。</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">3</span><span class="t">中央公告弹窗</span><span class="en">FIELD BULLETIN</span><span class="key">「氦更新」10.16.26 版本日志 · 全文翻译，看完即关</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <p>2026 年 10 月 16 日发布的「氦更新」<b>版本更新日志</b>，不是游戏内容，看完关掉即可。它下面空白的<b>蓝图网格</b>才是工作台——你在这里用材料涂刷装置的<b>横截面</b>（模拟器把 2D 剖面当轴对称体计算，所以对称性至关重要）。全文翻译如下：</p>
+        <div class="dlg"><span class="who">引导对话：</span>“同志，这是你的设计网格。你将在这里构建设备。网格表示你武器的横截面。”</div>
+        <div class="sec-title">★ 新增内容（NEW）</div>
+        <ul>
+          <li><span class="no">01</span><b>核设计库尔恰托夫博物馆</b>：可以 1:1 检视你自己的设计、历史设计和 Steam 工坊下载的设计（就是主界面 ARCHIVE 按钮里的内容）；</li>
+          <li><span class="no">02</span><b>Steam 工坊</b>：在分享菜单中发布和下载设计图纸；</li>
+          <li><span class="no">03</span><b>22 个新挑战</b>，名为「特殊订单」（Special Orders）；</li>
+          <li><span class="no">04</span><b>26 个新成就</b>；</li>
+          <li><span class="no">05</span>挑战与特殊订单的 <b>Steam 排行榜</b>；</li>
+          <li><span class="no">06</span><b>13 种新材料</b>和一个<b>接触式引信</b>；</li>
+          <li><span class="no">07</span>新的模拟视图：密度、温度、压力、速度、中子、X 射线和燃耗燃料占比；</li>
+          <li><span class="no">08</span>设计时可以<b>实时读取静态 k 值</b>（不用进实验室也能看装配是否临界）；</li>
+          <li><span class="no">09</span>模拟暂停时可用的<b>粒子检查器</b>；</li>
+          <li><span class="no">10</span>新的遥测图表（就是左侧那排）；</li>
+          <li><span class="no">11</span>氚的增殖（bred）与燃耗读数。</li>
+        </ul>
+        <div class="sec-title">★ 修复（FIXES）</div>
+        <ul>
+          <li><span class="no">01</span>修复「上帝粒子」bug：一个落单像素携带百万倍于应有值的能量；</li>
+          <li><span class="no">02</span>修复远离弹体的游离像素压低当量的问题；</li>
+          <li><span class="no">03</span>修复碎屑以 30,000 km/s 飞出画板的问题；</li>
+          <li><span class="no">04</span><span class="warn">重要（红字警告）：混合钚和 U-235 的设计现在会正确起爆，因此它们的当量会发生变化</span>——老存档的设计数值可能不准了；</li>
+          <li><span class="no">05</span>燃烧中的炸药和高温气体现在能点燃黑火药（推进剂链式点火修复）；</li>
+          <li><span class="no">06</span>被压缩的 D-T 核（氘氚聚变芯）模拟速度快了约一倍；</li>
+          <li><span class="no">08</span>修复 Steam 云在更换电脑或重装后<b>抹掉存档</b>的问题；</li>
+          <li><span class="no">09</span>Steam 云同步不再卡死游戏；</li>
+          <li><span class="no">10</span>首次模拟更快，大型设计下画板仍保持 60 FPS；</li>
+          <li><span class="no">11</span>安装包体缩小到约 0.9 GB；</li>
+          <li><span class="no">12–13</span>修复「？」和分享菜单超出屏幕、界面缩放与缩放修复；</li>
+          <li><span class="no">14</span>「First Light（首次点火）」现在止于 10 kt；</li>
+          <li><span class="no">15</span><span class="note">与使用 6 GB 显卡的玩家相关：GPU 程序失败的试爆现在会明确提示失败，而不是显示当量为 0</span>；</li>
+          <li><span class="no">16</span>新手教程进度修复。</li>
+        </ul>
+        <div class="sec-title">★ 界面/体验（UI/UX）</div>
+        <ul>
+          <li><span class="no">01</span>新控制台风格：辉光管（Nixie tubes）、行式打印机、电传打字机和橡皮图章——就是你看到的这套复古仪表界面；</li>
+          <li><span class="no">02</span>每次启动先开主菜单，带「继续」按钮；</li>
+          <li><span class="no">03</span>镜头跟随蘑菇云；</li>
+          <li><span class="no">04</span>存档设计支持文件夹分类；</li>
+          <li><span class="no">05–06</span>镜像绘制 + 抛物线形状；变换工具：选区可旋转任意角度；</li>
+          <li><span class="no">07</span>画板所有按键可自定义绑定；</li>
+          <li><span class="no">08</span>试爆日志（Shot Log）。</li>
+        </ul>
+        <div class="sec-title">★ 隐私（PRIVACY）</div>
+        <ul>
+          <li><span class="no">01</span>游戏只询问一次是否发送崩溃报告和使用数据，默认关闭，除非你勾选；</li>
+          <li><span class="no">02</span>你的显卡型号仅在自愿时进入排行榜记录；</li>
+          <li><span class="no">03</span>隐私政策和 EULA 可在游戏内阅读。</li>
+        </ul>
+        <p><b>结尾</b>：感谢玩家 @weedfrog 协助制作博物馆和新界面；旧版本会以「previous build」测试分支保留以防新版本出问题；按 ESC 菜单里的「Report a Bug」报 bug，建议发到官方 Discord 的 #suggestions 频道。底部快捷键提示：<b>右键 = 画板菜单，F = 适配画板，Ctrl + / − = 界面缩放</b>。</p>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">4</span><span class="t">遥测面板</span><span class="en">TELEMETRY</span><span class="key">引爆后的“体检报告”：核心看 k 有效值与当量</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <div class="dlg"><span class="who">引导对话：</span>“LIVE 跟随模拟实时刷新，HISTORY 显示从起点开始的完整记录。”</div>
+        <div class="dlg"><span class="who">引导对话：</span>“每张图表左边的小灯可以断开该通道（隐藏曲线），按 ⊞ 键重新连接所有通道。”</div>
+        <div class="dlg"><span class="who">引导对话：</span>“这些图表显示模拟过程中发生的事。你可以放大看细节，也可以隐藏它们。”</div>
+        <div class="sec-title">10 张图表的含义（术语见野战手册附录 B）</div>
+        <ul>
+          <li><b>K-EFFECTIVE（k 有效值）</b>：中子增殖系数，全场最重要的数字。k&lt;1 次临界 / k=1 临界 / k&gt;1 超临界；</li>
+          <li><b>NEUTRON ACTIVITY（中子活度）</b>：log₁₀(1+N) 标度的中子数；</li>
+          <li><b>NEUTRONS ESCAPED（逃逸中子）</b>：log₁₀(1+N)，反映反射层效率；</li>
+          <li><b>TOTAL / FISSION / FUSION YIELD（总/裂变/聚变当量，kt）</b>：能量产出三联表；</li>
+          <li><b>BULK / PEAK LOCAL FISSILE DENSITY（裂变材料密度）</b>：判断内爆压缩倍数（目标 2–3 倍）；</li>
+          <li><b>TRITIUM AVAILABLE（可用氚）</b>：聚变燃料的氚增殖进度；</li>
+          <li><b>LID REMAINING（剩余外壳 %）</b>：装置解体程度。</li>
+        </ul>
+        <div class="note">失败诊断顺序：k 没起来 → 临界/反射层问题（去临界实验室）；k 起来了但当量小 → 装配或压缩问题（用 PAUSE + 粒子检查器看冲击波）。</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">7</span><span class="t">引爆控制台</span><span class="en">DETONATION CONSOLE</span><span class="key">RUN → 掀安全盖 → DETONATE；PAUSE 逐帧诊断；RESET 重来</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <div class="dlg"><span class="who">引导对话：</span>“设计完成后，掀开安全盖，按下 DETONATE。用 PAUSE 可以暂停正在进行的试爆进行检查，用 RESET 停止模拟并重试。”</div>
+        <p>左侧 <b>RUN / HOLD / ARMED</b> 是模拟状态指示；大红钮 <b>DETONATE</b> 左上角的小开关就是“安全盖”；右侧 <b>PAUSE / RESET</b>；下方 <b>SPEED</b>（1× / ½ / ¼ / 1/10）放慢爆炸过程逐帧观察。底部 <b>OBSERVATION LOCKED — NO YIELD</b> 表示当前没有可观察的试爆数据。</p>
+        <div class="note">PAUSE + 粒子检查器是诊断哑爆（fizzle）的核心手段——等于在爆心装了一台摄像机；RESET 就是“撤回这次试验”，对应五阶段循环的第 5 步「迭代」。</div>
+      </div>
+    </details>
+
+    <details class="card">
+      <summary><span class="num">1</span><span class="t">顶部主菜单</span><span class="en">MAIN MENU</span><span class="key">存取设计 / 档案馆 / 战役切换；剪贴板=零件库；?=野战手册</span><span class="chev">▶</span></summary>
+      <div class="cbody">
+        <p><b>SHARE</b> 分享设计；<b>CLEAR BOARD</b> 清空画布；<b>SAVE</b> + 存档下拉框；<b>LOAD</b> 读取；<b>MANAGE</b> 管理存档；<b>ARCHIVE</b> 档案馆（=库尔恰托夫博物馆，看历史装置）；<b>CAMPAIGN</b> 回到任务视图；最右 <b>?</b> 帮助与设置。</p>
+        <div class="dlg"><span class="who">引导对话（收音机图标）：</span>“莫斯科广播电台为你提供人民音乐。这个按键开关收音机，打开后可以拖到任意位置。”——氛围功能。</div>
+        <div class="dlg"><span class="who">引导对话（剪贴板图标）：</span>“剪贴板记录设计历史，点击可回溯之前的设计。战役进度自动保存，SAVE 按钮手动存档。”——点开是「CONFIDENTIAL RECORDS 保密档案登记册（форма К-7）」：选中设计部件按 <b>Ctrl+C</b> 存副本到这里，随时 Ctrl+V 复用（画好的透镜阵列、枪管都值得存）。</div>
+        <div class="dlg"><span class="who">引导对话（? 按钮）：</span>“野战手册包含核物理与材料的技术文档。设计局所有工程师都必须阅读。”——菜单含 <b>Field Manual</b> 和 <b>Keyboard reference</b>。</div>
+        <a class="cardlink" href="manual.html">📖 打开《野战手册》全文翻译与导读 →</a>
+      </div>
+    </details>
+
+    <div class="tipbox">
+      <b>操作顺序（五阶段循环）</b>：① DOSSIER 读指令 → ② 临界实验室验证 k → ③ 网格涂刷设计 → ④ RUN + 掀盖 + DETONATE → ⑤ 看遥测找原因，<b>一次只改一个变量</b>再来。战役自动存档；命名存档保留“已知良好”基准（如 gun-gap-baseline）。
+    </div>
+
+  </div>
+</main>
+<script>
+(function () {
+  var viewer = document.getElementById('viewer');
+  var canvas = document.getElementById('canvas');
+  var label = document.getElementById('zoomLabel');
+  var scale = 1, tx = 0, ty = 0;
+  var MIN = 0.4, MAX = 6;
+
+  function apply() {
+    canvas.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
+    label.textContent = Math.round(scale * 100) + '%';
+  }
+  function clamp() {
+    var vw = viewer.clientWidth, vh = viewer.clientHeight;
+    var cw = canvas.offsetWidth * scale, ch = canvas.offsetHeight * scale;
+    var minTx = Math.min(0, vw - cw), minTy = Math.min(0, vh - ch);
+    var maxTx = Math.max(0, vw - cw * 0.34), maxTy = Math.max(0, vh - ch * 0.34);
+    if (cw <= vw) { tx = (vw - cw) / 2; } else { tx = Math.max(minTx, Math.min(maxTx, tx)); }
+    if (ch <= vh) { ty = (vh - ch) / 2; } else { ty = Math.max(minTy, Math.min(maxTy, ty)); }
+  }
+  function zoomTo(newScale, cx, cy) {
+    var r = viewer.getBoundingClientRect();
+    var px = (cx === undefined ? r.width / 2 : cx - r.left);
+    var py = (cy === undefined ? r.height / 2 : cy - r.top);
+    newScale = Math.max(MIN, Math.min(MAX, newScale));
+    var k = newScale / scale;
+    tx = px - (px - tx) * k;
+    ty = py - (py - ty) * k;
+    scale = newScale;
+    clamp(); apply();
+  }
+  function fit() {
+    scale = Math.min(viewer.clientWidth / canvas.offsetWidth, viewer.clientHeight / canvas.offsetHeight);
+    tx = 0; ty = 0; clamp(); apply();
+  }
+
+  document.getElementById('zoomIn').onclick = function () { zoomTo(scale * 1.35); };
+  document.getElementById('zoomOut').onclick = function () { zoomTo(scale / 1.35); };
+  document.getElementById('zoomReset').onclick = function () { scale = 1; tx = 0; ty = 0; clamp(); apply(); };
+  document.getElementById('zoomFit').onclick = fit;
+
+  viewer.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    zoomTo(scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY);
+  }, { passive: false });
+
+  var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
+  viewer.addEventListener('mousedown', function (e) {
+    dragging = true; viewer.classList.add('dragging');
+    sx = e.clientX; sy = e.clientY; ox = tx; oy = ty;
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (!dragging) return;
+    tx = ox + (e.clientX - sx); ty = oy + (e.clientY - sy); apply();
+  });
+  window.addEventListener('mouseup', function () {
+    if (!dragging) return;
+    dragging = false; viewer.classList.remove('dragging'); clamp(); apply();
+  });
+
+  document.getElementById('expandAll').onclick = function () {
+    document.querySelectorAll('details.card').forEach(function (d) { d.open = true; });
+  };
+  document.getElementById('collapseAll').onclick = function () {
+    document.querySelectorAll('details.card').forEach(function (d) { d.open = false; });
+  };
+
+  window.addEventListener('resize', function () { clamp(); apply(); });
+  fit();
+})();
+</script>
+</body>
+</html>

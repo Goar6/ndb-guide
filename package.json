@@ -1,0 +1,9 @@
+{
+  "name": "ndb-guide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nuclear Design Bureau 非官方中文指南（主界面标注 + 野战手册对照翻译）",
+  "scripts": {
+    "dev": "node server.js"
+  }
+}
