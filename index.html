@@ -45,6 +45,7 @@
   .viewer {
     position: relative; height: 78vh; overflow: hidden;
     border: 1px solid #4a3a28; border-radius: 6px; background: #000; cursor: grab;
+    touch-action: none; user-select: none; -webkit-user-select: none;
   }
   .viewer.dragging { cursor: grabbing; }
   .canvas { position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 1800 / 1125; transform-origin: 0 0; }
@@ -352,20 +353,57 @@
     zoomTo(scale * (e.deltaY < 0 ? 1.15 : 1 / 1.15), e.clientX, e.clientY);
   }, { passive: false });
 
-  var dragging = false, sx = 0, sy = 0, ox = 0, oy = 0;
-  viewer.addEventListener('mousedown', function (e) {
-    dragging = true; viewer.classList.add('dragging');
-    sx = e.clientX; sy = e.clientY; ox = tx; oy = ty;
+  var pointers = new Map(), drag = null, pinch = null;
+  function startDrag() {
+    var p = Array.from(pointers.values())[0];
+    drag = { x: p.x - tx, y: p.y - ty }; pinch = null;
+  }
+  function startPinch() {
+    var p = Array.from(pointers.values()), r = viewer.getBoundingClientRect();
+    pinch = {
+      distance: Math.max(1, Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y)),
+      midX: (p[0].x + p[1].x) / 2 - r.left,
+      midY: (p[0].y + p[1].y) / 2 - r.top,
+      scale: scale, tx: tx, ty: ty
+    };
+    drag = null;
+  }
+  viewer.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    viewer.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    viewer.classList.add('dragging');
+    if (pointers.size === 1) startDrag(); else if (pointers.size === 2) startPinch();
     e.preventDefault();
   });
-  window.addEventListener('mousemove', function (e) {
-    if (!dragging) return;
-    tx = ox + (e.clientX - sx); ty = oy + (e.clientY - sy); apply();
+  viewer.addEventListener('pointermove', function (e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.size === 2 && pinch) {
+      var p = Array.from(pointers.values()), r = viewer.getBoundingClientRect();
+      var distance = Math.max(1, Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y));
+      var midX = (p[0].x + p[1].x) / 2 - r.left, midY = (p[0].y + p[1].y) / 2 - r.top;
+      var newScale = Math.max(MIN, Math.min(MAX, pinch.scale * distance / pinch.distance));
+      var k = newScale / pinch.scale;
+      tx = midX - (pinch.midX - pinch.tx) * k;
+      ty = midY - (pinch.midY - pinch.ty) * k;
+      scale = newScale; clamp(); apply();
+    } else if (pointers.size === 1 && drag) {
+      tx = e.clientX - drag.x; ty = e.clientY - drag.y; apply();
+    }
+    e.preventDefault();
   });
-  window.addEventListener('mouseup', function () {
-    if (!dragging) return;
-    dragging = false; viewer.classList.remove('dragging'); clamp(); apply();
-  });
+  function endPointer(e) {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    if (pointers.size === 1) startDrag();
+    else if (pointers.size === 2) startPinch();
+    else if (!pointers.size) {
+      drag = pinch = null; viewer.classList.remove('dragging'); clamp(); apply();
+    }
+  }
+  viewer.addEventListener('pointerup', endPointer);
+  viewer.addEventListener('pointercancel', endPointer);
 
   document.getElementById('expandAll').onclick = function () {
     document.querySelectorAll('details.card').forEach(function (d) { d.open = true; });

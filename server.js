@@ -12,6 +12,7 @@ const ROOT = __dirname;
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.png': 'image/png',
+  '.webp': 'image/webp',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.svg': 'image/svg+xml',

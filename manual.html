@@ -17,15 +17,15 @@
   .wrap { display:flex; align-items:stretch; }
   /* 左侧原文查看器 */
   aside.viewer { width:46%; flex-shrink:0; align-self:flex-start; position:sticky; top:41px; height:calc(100vh - 41px); display:flex; flex-direction:column; background:#0d0b08; border-right:1px solid #4a3a28; }
-  .vstage { flex:1; overflow:hidden; position:relative; }
+  .vstage { flex:1; overflow:hidden; position:relative; touch-action:none; user-select:none; -webkit-user-select:none; }
   .vstage img.pg { position:absolute; left:0; top:0; transform-origin:0 0; cursor:grab; max-width:none; user-select:none; -webkit-user-drag:none; }
   .vstage img.pg.grabbing { cursor:grabbing; }
   .vbar { display:flex; align-items:center; gap:6px; padding:6px 10px; background:#1b1510; border-top:1px solid #3a332a; flex-wrap:wrap; }
   .vbar button { background:#2a241c; border:1px solid #55483a; color:#e8c06a; border-radius:4px; padding:2px 10px; font-size:13px; cursor:pointer; }
   .vbar button:hover { background:#3a3226; }
   .vbar .cap { color:#b8af9c; font-size:12.5px; margin-left:auto; max-width:60%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .thumbs { display:flex; gap:6px; padding:6px 10px; background:#171310; border-top:1px solid #3a332a; min-height:66px; align-items:center; }
-  .thumbs img { width:84px; height:auto; border:2px solid transparent; border-radius:3px; cursor:pointer; opacity:.65; }
+  .thumbs { display:flex; gap:6px; padding:6px 10px; background:#171310; border-top:1px solid #3a332a; min-height:66px; align-items:center; overflow-x:auto; }
+  .thumbs img { width:84px; height:auto; aspect-ratio:1800 / 1125; flex:0 0 auto; object-fit:cover; background:#241f18; border:2px solid transparent; border-radius:3px; cursor:pointer; opacity:.65; }
   .thumbs img.cur { border-color:#e2543e; opacity:1; }
   /* 右侧译文 */
   main.text { flex:1; padding:22px 34px 90px; min-width:0; }
@@ -551,9 +551,9 @@ function buildThumbs(){
   thumbs.innerHTML='';
   files().forEach((f,j)=>{
     const t=document.createElement('img');
-    t.loading='lazy'; t.decoding='async';
+    t.loading='eager'; t.decoding='async';
     t.dataset.rc='0'; t.dataset.fallback='0';
-    t.src=imageURL(f); t.title=LABELS[f]||f;
+    t.src=imageURL(f); t.title=LABELS[f]||f; t.alt='原书缩略图：'+(LABELS[f]||f);
     t.onerror=()=>{
       if(t.dataset.fallback!=='1'){ t.dataset.fallback='1'; t.dataset.rc='0'; t.src=imageURL(f,'png'); return; }
       const n=(+t.dataset.rc||0);
@@ -588,10 +588,54 @@ stage.addEventListener('wheel',e=>{
   const k=e.deltaY<0?1.15:1/1.15, ns=Math.min(8,Math.max(0.05,scale*k));
   tx=mx-(mx-tx)*ns/scale; ty=my-(my-ty)*ns/scale; scale=ns; fresh=false; apply();
 },{passive:false});
-let drag=null;
-stage.addEventListener('pointerdown',e=>{ drag={x:e.clientX-tx,y:e.clientY-ty}; img.classList.add('grabbing'); stage.setPointerCapture(e.pointerId); });
-stage.addEventListener('pointermove',e=>{ if(drag){ tx=e.clientX-drag.x; ty=e.clientY-drag.y; fresh=false; apply(); } });
-stage.addEventListener('pointerup',()=>{ drag=null; img.classList.remove('grabbing'); });
+const pointers=new Map();
+let drag=null, pinch=null;
+function startDrag(){
+  const p=[...pointers.values()][0];
+  drag={x:p.x-tx,y:p.y-ty}; pinch=null;
+}
+function startPinch(){
+  const p=[...pointers.values()], r=stage.getBoundingClientRect();
+  pinch={
+    distance:Math.max(1,Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y)),
+    midX:(p[0].x+p[1].x)/2-r.left,
+    midY:(p[0].y+p[1].y)/2-r.top,
+    scale:scale,tx:tx,ty:ty
+  };
+  drag=null;
+}
+stage.addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0) return;
+  stage.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  img.classList.add('grabbing');
+  if(pointers.size===1) startDrag(); else if(pointers.size===2) startPinch();
+  e.preventDefault();
+});
+stage.addEventListener('pointermove',e=>{
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===2&&pinch){
+    const p=[...pointers.values()], r=stage.getBoundingClientRect();
+    const distance=Math.max(1,Math.hypot(p[0].x-p[1].x,p[0].y-p[1].y));
+    const midX=(p[0].x+p[1].x)/2-r.left, midY=(p[0].y+p[1].y)/2-r.top;
+    const ns=Math.min(8,Math.max(0.05,pinch.scale*distance/pinch.distance)), k=ns/pinch.scale;
+    tx=midX-(pinch.midX-pinch.tx)*k; ty=midY-(pinch.midY-pinch.ty)*k;
+    scale=ns; fresh=false; apply();
+  }else if(pointers.size===1&&drag){
+    tx=e.clientX-drag.x; ty=e.clientY-drag.y; fresh=false; apply();
+  }
+  e.preventDefault();
+});
+function endPointer(e){
+  if(!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+  if(pointers.size===1) startDrag();
+  else if(pointers.size===2) startPinch();
+  else if(!pointers.size){ drag=pinch=null; img.classList.remove('grabbing'); }
+}
+stage.addEventListener('pointerup',endPointer);
+stage.addEventListener('pointercancel',endPointer);
 document.getElementById('bnext').onclick=()=>{ show(idx+1); fresh=false; };
 document.getElementById('bprev').onclick=()=>{ show(idx-1); fresh=false; };
 document.getElementById('bzin').onclick=()=>{ scale=Math.min(8,scale*1.25); fresh=false; apply(); };
@@ -602,7 +646,10 @@ stage.addEventListener('dblclick',()=>fit());
 /* 图随文动 */
 let ticking=false;
 function spy(){
-  const line=window.innerHeight*0.35; let cur=secs[0];
+  const mobile=window.matchMedia('(max-width: 980px)').matches;
+  const viewerBottom=document.querySelector('aside.viewer').getBoundingClientRect().bottom;
+  const line=mobile?Math.min(window.innerHeight*0.8,viewerBottom+32):window.innerHeight*0.35;
+  let cur=secs[0];
   for(const s of secs){ if(s.getBoundingClientRect().top<=line) cur=s; else break; }
   if(cur) setSection(cur);
   ticking=false;
